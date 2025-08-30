@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicResolve - Report. Resolve. Rebuild.</title>
+
+    <!-- Replace Tailwind CDN with built CSS -->
+    <link href="css/output.css" rel="stylesheet">
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Chart.js for Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #f5f5f5;
+        }
+
+        .hero-bg {
+            background-color: #0a0a0a;
+            background-image:
+                radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.1) 1px, transparent 0);
+            background-size: 2rem 2rem;
+            animation: move-bg 20s linear infinite;
+        }
+
+        @keyframes move-bg {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 64px 64px;
+            }
+        }
+
+        .glass-effect {
+            background: rgba(17, 17, 17, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glow-effect {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(29, 78, 216, 0.3) 0%, rgba(29, 78, 216, 0) 60%);
+            z-index: -1;
+            animation: pulse-glow 8s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            from {
+                transform: scale(0.8);
+                opacity: 0.7;
+            }
+
+            to {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 1s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .scroll-animation {
+            opacity: 0;
+            transition: opacity 1s ease-out, transform 1s ease-out;
+            transform: translateY(50px);
+        }
+
+        .scroll-animation.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .btn-premium {
+            transition: all 0.3s ease;
+        }
+
+        .btn-premium:hover {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-content {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        #jarvis-chat-container {
+            bottom: -100%;
+            transition: bottom 0.5s ease-in-out;
+        }
+
+        #jarvis-chat-container.open {
+            bottom: 80px;
+        }
+
+        .chat-bubble {
+            max-width: 75%;
+        }
+
+        .chat-bubble-user {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        .chat-bubble-jarvis {
+            background-color: #3f3f46;
+            color: #e5e5e5;
+        }
+
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background-color: #9ca3af;
+            display: inline-block;
+            border-radius: 50%;
+            animation: typing 1s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Page transition styles */
+        .page {
+            display: none;
+            animation: fadeInPage 0.8s ease-out forwards;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeInPage {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Active nav link style */
+        .nav-link.active {
+            color: #3b82f6;
+            /* blue-500 */
+        }
+    </style>
+</head>
+
+<body class="overflow-x-hidden">
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 glass-effect">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#home" class="nav-link text-2xl font-bold text-white tracking-wider">
+                Civic<span class="text-blue-500">Resolve</span>
+            </a>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#home" class="nav-link text-gray-300 hover:text-blue-400 transition active">Home</a>
+                <a href="#how-it-works" class="nav-link text-gray-300 hover:text-blue-400 transition">How It Works</a>
+                <a href="#dashboard" class="nav-link text-gray-300 hover:text-blue-400 transition">Dashboard</a>
+                <a href="#complaint" class="nav-link text-gray-300 hover:text-blue-400 transition">File Complaint</a>
+                <a href="#team" class="nav-link text-gray-300 hover:text-blue-400 transition">Team</a>
+                <a href="#contact" class="nav-link text-gray-300 hover:text-blue-400 transition">Contact</a>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <button id="login-btn"
+                    class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 transition btn-premium">Login
+                    / Sign Up</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-20">
+        <!-- Home Page -->
+        <section id="home" class="page active">
+            <div class="relative hero-bg min-h-screen flex items-center justify-center -mt-20 overflow-hidden">
+                <div class="glow-effect top-1/4 left-1/4"></div>
+                <div class="glow-effect bottom-1/4 right-1/4 animation-delay-4000"></div>
+
+                <div class="container mx-auto px-6 text-center z-10">
+                    <h1 class="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-4 fade-in-up">
+                        Report. <span class="text-blue-500">Resolve.</span> Rebuild.
+                    </h1>
+                    <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8 fade-in-up"
+                        style="animation-delay: 0.3s;">
+                        Your voice, amplified. CivicResolve is the intelligent platform connecting you with the right
+                        authorities to get civic issues fixed, fast.
+                    </p>
+                    <div class="fade-in-up" style="animation-delay: 0.6s;">
+                        <a href="#complaint"
+                            class="nav-link bg-blue-600 text-white px-8 py-4 rounded-lg font-bold text-lg inline-block hover:bg-blue-700 transition btn-premium">
+                            File a Complaint Now
+                        </a>
+                    </div>
+
+                    <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto fade-in-up"
+                        style="animation-delay: 0.9s;">
+                        <div class="glass-effect p-6 rounded-xl">
+                            <p class="text-4xl font-bold text-blue-400" id="complaints-filed">12,500+</p>
+                            <p class="text-gray-400">Total Complaints Filed</p>
+                        </div>
+                        <div class="glass-effect p-6 rounded-xl">
+                            <p class="text-4xl font-bold text-green-400" id="complaints-resolved">11,800+</p>
+                            <p class="text-gray-400">Issues Successfully Resolved</p>
+                        </div>
+                        <div class="glass-effect p-6 rounded-xl">
+                            <p class="text-4xl font-bold text-yellow-400" id="active-departments">15+</p>
+                            <p class="text-gray-400">Departments Connected</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Featured Resolutions Section -->
+            <div class="py-20 bg-black">
+                <div class="container mx-auto px-6">
+                    <div class="text-center mb-12 scroll-animation">
+                        <h2 class="text-4xl font-bold text-white">Success Stories</h2>
+                        <p class="text-gray-400 mt-2">See real issues resolved through our platform.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="glass-effect rounded-2xl overflow-hidden scroll-animation">
+                            <img src="https://placehold.co/600x400/101010/3b82f6?text=Pothole+Fixed" alt="Pothole Fixed"
+                                class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <span
+                                    class="text-sm bg-green-500/20 text-green-300 px-3 py-1 rounded-full">Resolved</span>
+                                <h3 class="text-xl font-bold mt-3">Major Pothole on Main Street Repaired</h3>
+                                <p class="text-gray-400 mt-2 text-sm">Complaint filed on Aug 15, 2025. Resolved by
+                                    Municipal Corp on Aug 18, 2025.</p>
+                            </div>
+                        </div>
+                        <div class="glass-effect rounded-2xl overflow-hidden scroll-animation"
+                            style="transition-delay: 0.2s;">
+                            <img src="https://placehold.co/600x400/101010/3b82f6?text=Streetlight+Working"
+                                alt="Streetlight Working" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <span
+                                    class="text-sm bg-green-500/20 text-green-300 px-3 py-1 rounded-full">Resolved</span>
+                                <h3 class="text-xl font-bold mt-3">New Streetlights Installed in Park</h3>
+                                <p class="text-gray-400 mt-2 text-sm">Complaint filed on Aug 10, 2025. Resolved by
+                                    Municipal Corp on Aug 16, 2025.</p>
+                            </div>
+                        </div>
+                        <div class="glass-effect rounded-2xl overflow-hidden scroll-animation"
+                            style="transition-delay: 0.4s;">
+                            <img src="https://placehold.co/600x400/101010/3b82f6?text=Campus+Wi-Fi+Upgraded"
+                                alt="Campus Wi-Fi Upgraded" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <span
+                                    class="text-sm bg-green-500/20 text-green-300 px-3 py-1 rounded-full">Resolved</span>
+                                <h3 class="text-xl font-bold mt-3">University Library Wi-Fi Overhauled</h3>
+                                <p class="text-gray-400 mt-2 text-sm">Complaint filed by student council on Aug 5, 2025.
+                                    Resolved by College IT on Aug 20, 2025.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Page -->
+        <section id="how-it-works" class="page py-20 bg-gray-900/50">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-20 scroll-animation">
+                    <h2 class="text-5xl font-extrabold text-white">The CivicResolve Blueprint</h2>
+                    <p class="text-gray-400 mt-4 text-lg max-w-2xl mx-auto">Our streamlined, AI-driven process ensures
+                        your concerns are not just heard, but acted upon swiftly and transparently.</p>
+                </div>
+                <div class="relative">
+                    <!-- The connecting line -->
+                    <div class="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-gray-700 -translate-y-1/2">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                        <div class="relative text-center scroll-animation">
+                            <div
+                                class="relative bg-gray-900 z-10 glass-effect p-8 rounded-2xl border-t-4 border-blue-500">
+                                <div class="bg-blue-900/50 inline-flex p-5 rounded-full mb-6 ring-8 ring-gray-900">
+                                    <i data-lucide="smartphone" class="w-10 h-10 text-blue-400"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold mb-3">1. Submit with Ease</h3>
+                                <p class="text-gray-400">Use our intuitive form or AI Chatbot to report an issue. Upload
+                                    photos, videos, and pinpoint the exact location on a map. Our system helps you
+                                    provide all the necessary details for a quick resolution.</p>
+                            </div>
+                        </div>
+                        <div class="relative text-center scroll-animation" style="transition-delay: 0.2s;">
+                            <div
+                                class="relative bg-gray-900 z-10 glass-effect p-8 rounded-2xl border-t-4 border-blue-500">
+                                <div class="bg-blue-900/50 inline-flex p-5 rounded-full mb-6 ring-8 ring-gray-900">
+                                    <i data-lucide="cpu" class="w-10 h-10 text-blue-400"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold mb-3">2. AI-Powered Analysis</h3>
+                                <p class="text-gray-400">Once submitted, our "Jarvis" AI engine analyzes the complaint's
+                                    content, urgency, and location. It intelligently categorizes the issue and routes it
+                                    to the pre-assigned official in the correct department, eliminating bureaucratic
+                                    delays.</p>
+                            </div>
+                        </div>
+                        <div class="relative text-center scroll-animation" style="transition-delay: 0.4s;">
+                            <div
+                                class="relative bg-gray-900 z-10 glass-effect p-8 rounded-2xl border-t-4 border-blue-500">
+                                <div class="bg-blue-900/50 inline-flex p-5 rounded-full mb-6 ring-8 ring-gray-900">
+                                    <i data-lucide="check-circle-2" class="w-10 h-10 text-blue-400"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold mb-3">3. Transparent Tracking</h3>
+                                <p class="text-gray-400">Monitor the progress of your complaint in real-time on your
+                                    personal dashboard. Receive automated notifications at every stage, from "In Review"
+                                    to "Work in Progress" and finally "Resolved". Your feedback is requested upon
+                                    completion.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Public Dashboard Page -->
+        <section id="dashboard" class="page py-20 bg-black">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12 scroll-animation">
+                    <h2 class="text-5xl font-extrabold text-white">Public Transparency Portal</h2>
+                    <p class="text-gray-400 mt-4 text-lg">Fostering accountability with real-time, anonymized data for
+                        everyone.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                    <div class="lg:col-span-3 glass-effect p-6 rounded-2xl scroll-animation">
+                        <h3 class="text-xl font-semibold mb-4 text-white">Complaints by Department</h3>
+                        <canvas id="complaintsChart"></canvas>
+                    </div>
+                    <div class="lg:col-span-2 glass-effect p-6 rounded-2xl scroll-animation"
+                        style="transition-delay: 0.2s;">
+                        <h3 class="text-xl font-semibold mb-4 text-white">Overall Status</h3>
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                    <div class="lg:col-span-5 glass-effect p-6 rounded-2xl scroll-animation"
+                        style="transition-delay: 0.4s;">
+                        <h3 class="text-xl font-semibold mb-4 text-white">Resolution Time Trend (Last 6 Months)</h3>
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Complaint Form Page -->
+        <section id="complaint" class="page py-20 bg-gray-900/50">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12 scroll-animation">
+                    <h2 class="text-5xl font-extrabold text-white">File a New Complaint</h2>
+                    <p class="text-gray-400 mt-4 text-lg max-w-2xl mx-auto">Your detailed report helps us resolve issues
+                        faster. Please provide as much information as possible.</p>
+                </div>
+                <div class="max-w-4xl mx-auto glass-effect p-8 md:p-12 rounded-2xl scroll-animation">
+                    <form>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="md:col-span-2">
+                                <label for="complaint-title" class="block text-gray-300 mb-2 font-semibold">Complaint
+                                    Title</label>
+                                <input type="text" id="complaint-title" placeholder="e.g., Large pothole on Main Street"
+                                    class="w-full bg-gray-800 border border-gray-600 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="complaint-dept" class="block text-gray-300 mb-2 font-semibold">Select
+                                    Department</label>
+                                <select id="complaint-dept"
+                                    class="w-full bg-gray-800 border border-gray-600 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option>Municipal Corporation</option>
+                                    <option>College Campus</option>
+                                    <option>Police Department</option>
+                                    <option>Law & Suggestions</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="complaint-category"
+                                    class="block text-gray-300 mb-2 font-semibold">Category</label>
+                                <input type="text" id="complaint-category" placeholder="e.g., Road Maintenance"
+                                    class="w-full bg-gray-800 border border-gray-600 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="complaint-desc" class="block text-gray-300 mb-2 font-semibold">Detailed
+                                    Description</label>
+                                <textarea id="complaint-desc" rows="5" placeholder="Describe the issue in detail..."
+                                    class="w-full bg-gray-800 border border-gray-600 rounded-md px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-gray-300 mb-2 font-semibold">Upload Photos/Videos</label>
+                                <div
+                                    class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-600 border-dashed rounded-md">
+                                    <div class="space-y-1 text-center">
+                                        <i data-lucide="upload-cloud" class="mx-auto h-12 w-12 text-gray-500"></i>
+                                        <div class="flex text-sm text-gray-400">
+                                            <label for="file-upload"
+                                                class="relative cursor-pointer bg-gray-800 rounded-md font-medium text-blue-400 hover:text-blue-500 focus-within:outline-none">
+                                                <span>Upload a file</span>
+                                                <input id="file-upload" name="file-upload" type="file" class="sr-only"
+                                                    multiple>
+                                            </label>
+                                            <p class="pl-1">or drag and drop</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="md:col-span-2">
+                                <button type="submit"
+                                    class="w-full bg-blue-600 text-white py-4 rounded-lg font-bold hover:bg-blue-700 transition btn-premium text-lg">Submit
+                                    Complaint</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team Page -->
+        <section id="team" class="page py-20 bg-black">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12 scroll-animation">
+                    <h2 class="text-5xl font-extrabold text-white">The Innovators Behind CivicResolve</h2>
+                    <p class="text-gray-400 mt-4 text-lg">A dedicated team committed to enhancing civic engagement
+                        through technology.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+                    <div
+                        class="glass-effect p-8 rounded-2xl text-center scroll-animation transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300">
+                        <img src="https://placehold.co/150x150/1d4ed8/ffffff?text=HK" alt="Harshad Kantibhai"
+                            class="w-36 h-36 rounded-full mx-auto mb-4 border-4 border-blue-500">
+                        <h3 class="text-2xl font-bold text-white">JETHVA HARSHAD KANTIBHAI</h3>
+                        <p class="text-blue-400 font-semibold text-lg mt-1">[LEAD, FRONTEND ARCHITECT]</p>
+                        <p class="text-gray-400 mt-3">Harshad is the visionary behind the user experience, crafting the
+                            seamless and animated interface that makes CivicResolve a joy to use.</p>
+                        <p class="text-gray-500 mt-2 text-sm">Roll No: 721</p>
+                    </div>
+                    <div class="glass-effect p-8 rounded-2xl text-center scroll-animation transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300"
+                        style="transition-delay: 0.2s;">
+                        <img src="https://placehold.co/150x150/1d4ed8/ffffff?text=AG" alt="Abhishek Jayprakash"
+                            class="w-36 h-36 rounded-full mx-auto mb-4 border-4 border-blue-500">
+                        <h3 class="text-2xl font-bold text-white">GOND ABHISHEK JAYPRAKASH</h3>
+                        <p class="text-blue-400 font-semibold text-lg mt-1">[BACKEND SPECIALIST]</p>
+                        <p class="text-gray-400 mt-3">Abhishek engineers the robust backbone of the platform, ensuring
+                            data is handled securely, efficiently, and scales to meet demand.</p>
+                        <p class="text-gray-500 mt-2 text-sm">Roll No: 705</p>
+                    </div>
+                    <div class="glass-effect p-8 rounded-2xl text-center scroll-animation transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300"
+                        style="transition-delay: 0.4s;">
+                        <img src="https://placehold.co/150x150/1d4ed8/ffffff?text=BB" alt="Banti Mangalaprashad"
+                            class="w-36 h-36 rounded-full mx-auto mb-4 border-4 border-blue-500">
+                        <h3 class="text-2xl font-bold text-white">BIND BANTI MANGALAPRASHAD</h3>
+                        <p class="text-blue-400 font-semibold text-lg mt-1">[AI ENGINEER]</p>
+                        <p class="text-gray-400 mt-3">Banti is the mastermind behind our AI, "Jarvis", developing the
+                            intelligent algorithms that power our smart routing and chatbot features.</p>
+                        <p class="text-gray-500 mt-2 text-sm">Roll No: 706</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Page -->
+        <section id="contact" class="page py-20 bg-gray-900/50">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12 scroll-animation">
+                    <h2 class="text-5xl font-extrabold text-white">Get In Touch</h2>
+                    <p class="text-gray-400 mt-4 text-lg">We're here to help. Contact us for support, partnerships, or
+                        general inquiries.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div class="glass-effect p-8 rounded-2xl scroll-animation">
+                        <h3 class="text-2xl font-bold mb-6">Send us a Message</h3>
+                        <form>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label for="contact-name" class="block text-gray-300 mb-2">Name</label>
+                                    <input type="text" id="contact-name"
+                                        class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label for="contact-email" class="block text-gray-300 mb-2">Email</label>
+                                    <input type="email" id="contact-email"
+                                        class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <div class="mb-6">
+                                <label for="contact-message" class="block text-gray-300 mb-2">Message</label>
+                                <textarea id="contact-message" rows="5"
+                                    class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                            </div>
+                            <button type="submit"
+                                class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition btn-premium">Send
+                                Message</button>
+                        </form>
+                    </div>
+                    <div class="scroll-animation" style="transition-delay: 0.2s;">
+                        <div class="glass-effect p-8 rounded-2xl h-full flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-2xl font-bold mb-6">Contact Information</h3>
+                                <div class="space-y-6">
+                                    <div class="flex items-start space-x-4">
+                                        <i data-lucide="map-pin" class="w-6 h-6 text-blue-400 mt-1"></i>
+                                        <div>
+                                            <h4 class="font-semibold text-lg">Our Office</h4>
+                                            <p class="text-gray-400">123 Innovation Drive, Tech Park, Surat, Gujarat,
+                                                395007, India</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start space-x-4">
+                                        <i data-lucide="mail" class="w-6 h-6 text-blue-400 mt-1"></i>
+                                        <div>
+                                            <h4 class="font-semibold text-lg">Email Us</h4>
+                                            <p class="text-gray-400">contact@civicresolve.com</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start space-x-4">
+                                        <i data-lucide="phone" class="w-6 h-6 text-blue-400 mt-1"></i>
+                                        <div>
+                                            <h4 class="font-semibold text-lg">Call Us</h4>
+                                            <p class="text-gray-400">+91 98765 43210</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-8">
+                                <iframe
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d119064.4258567794!2d72.7539634212705!3d21.15914251726716!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be04e59411d1563%3A0xfe4558290938b042!2sSurat%2C%2G%75jarat!5e0!3m2!1sen!2sin!4v1693389020000!5m2!1sen!2sin"
+                                    width="100%" height="200" style="border:0;" allowfullscreen="" loading="lazy"
+                                    referrerpolicy="no-referrer-when-downgrade" class="rounded-lg"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black border-t-2 border-blue-900/50">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="md:col-span-1">
+                    <h3 class="text-2xl font-bold text-white tracking-wider">
+                        Civic<span class="text-blue-500">Resolve</span>
+                    </h3>
+                    <p class="text-gray-400 mt-4">The intelligent platform for modern civic engagement. Report, track,
+                        and resolve community issues with the power of AI.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-white">Quick Links</h4>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="#home" class="nav-link text-gray-400 hover:text-blue-400">Home</a></li>
+                        <li><a href="#how-it-works" class="nav-link text-gray-400 hover:text-blue-400">How It Works</a>
+                        </li>
+                        <li><a href="#dashboard" class="nav-link text-gray-400 hover:text-blue-400">Public Dashboard</a>
+                        </li>
+                        <li><a href="#complaint" class="nav-link text-gray-400 hover:text-blue-400">File a Complaint</a>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-white">About Us</h4>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="#team" class="nav-link text-gray-400 hover:text-blue-400">Our Team</a></li>
+                        <li><a href="#contact" class="nav-link text-gray-400 hover:text-blue-400">Contact Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-blue-400">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-blue-400">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-white">Contact</h4>
+                    <p class="text-gray-400 mt-4">123 Innovation Drive, Surat, Gujarat, 395007</p>
+                    <p class="text-gray-400 mt-2">contact@civicresolve.com</p>
+                </div>
+            </div>
+            <div class="mt-8 border-t border-gray-800 pt-6 flex flex-col sm:flex-row justify-between items-center">
+                <p class="text-gray-500 text-sm">&copy; 2025 CivicResolve. All Rights Reserved.</p>
+                <div class="flex space-x-4 mt-4 sm:mt-0">
+                    <a href="#" class="text-gray-500 hover:text-blue-400"><i data-lucide="twitter"></i></a>
+                    <a href="#" class="text-gray-500 hover:text-blue-400"><i data-lucide="facebook"></i></a>
+                    <a href="#" class="text-gray-500 hover:text-blue-400"><i data-lucide="linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Jarvis AI Chatbot & Modal -->
+    <div id="jarvis-fab" class="fixed bottom-5 right-5 z-50">
+        <button
+            class="bg-blue-600 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 transition transform hover:scale-110 btn-premium">
+            <i data-lucide="bot" class="w-8 h-8"></i>
+        </button>
+    </div>
+
+    <div id="jarvis-chat-container"
+        class="fixed right-5 w-full max-w-md h-3/4 max-h-[600px] z-50 glass-effect rounded-2xl shadow-2xl flex flex-col">
+        <div class="flex items-center justify-between p-4 border-b border-gray-700">
+            <h3 class="text-lg font-bold flex items-center"><i data-lucide="bot"
+                    class="w-6 h-6 mr-2 text-blue-400"></i>Jarvis AI Assistant</h3>
+            <button id="close-jarvis-btn"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        <!-- API Key section has been removed for a seamless user experience -->
+        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto">
+            <div class="flex justify-start mb-4">
+                <div class="chat-bubble chat-bubble-jarvis p-3 rounded-lg">
+                    <p>Hello! I am Jarvis, your AI assistant. How can I help you today?</p>
+                </div>
+            </div>
+        </div>
+        <div id="chat-input-section" class="p-4 border-t border-gray-700">
+            <div class="relative">
+                <input type="text" id="chat-input"
+                    class="w-full bg-gray-800 border border-gray-600 rounded-full pl-4 pr-12 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Ask me anything...">
+                <button id="send-chat-btn"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 w-9 h-9 rounded-full flex items-center justify-center">
+                    <i data-lucide="send" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="auth-modal" class="modal">
+        <div class="modal-content glass-effect rounded-2xl w-11/12 max-w-md mx-auto mt-20 p-8 relative">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <div class="mb-6">
+                <div class="flex border-b border-gray-700">
+                    <button class="tab-btn active text-lg font-bold py-2 px-4 text-white border-b-2 border-blue-500"
+                        data-tab="login">Login</button>
+                    <button class="tab-btn text-lg font-bold py-2 px-4 text-gray-500" data-tab="signup">Sign Up</button>
+                </div>
+            </div>
+            <div id="login" class="tab-content">
+                <form>
+                    <div class="mb-4">
+                        <label for="login-email" class="block text-gray-300 mb-2">Email</label>
+                        <input type="email" id="login-email"
+                            class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="mb-6">
+                        <label for="login-password" class="block text-gray-300 mb-2">Password</label>
+                        <input type="password" id="login-password"
+                            class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition btn-premium">Login</button>
+                </form>
+            </div>
+            <div id="signup" class="tab-content hidden">
+                <form>
+                    <div class="mb-4">
+                        <label for="signup-name" class="block text-gray-300 mb-2">Full Name</label>
+                        <input type="text" id="signup-name"
+                            class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label for="signup-email" class="block text-gray-300 mb-2">Email</label>
+                        <input type="email" id="signup-email"
+                            class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="mb-6">
+                        <label for="signup-password" class="block text-gray-300 mb-2">Password</label>
+                        <input type="password" id="signup-password"
+                            class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition btn-premium">Create
+                        Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        window.addEventListener("DOMContentLoaded", () => {
+            // Initialize Lucide icons
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+
+            // --- Page Navigation Logic ---
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pages = document.querySelectorAll('.page');
+
+            function showSection(sectionId) {
+                // Remove 'active' class from all pages first
+                pages.forEach(page => {
+                    if (page.id === sectionId) {
+                        page.style.display = 'block';
+                        // Smooth scroll to the section
+                        page.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        page.style.display = 'none';
+                    }
+                });
+
+                // Update active state for navigation links
+                navLinks.forEach(link => {
+                    const href = link.getAttribute('href').substring(1);
+                    if (href === sectionId) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+            }
+
+            // Handle navigation link clicks
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const sectionId = link.getAttribute('href').substring(1);
+                    showSection(sectionId);
+                });
+            });
+
+            // Show initial section
+            const initialSection = window.location.hash.substring(1) || 'home';
+            showSection(initialSection);
+
+            // --- Existing JS ---
+
+            // Animated Counters
+            const counterObserver = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const filed = document.getElementById('complaints-filed');
+                        const resolved = document.getElementById('complaints-resolved');
+                        const departments = document.getElementById('active-departments');
+
+                        animateValue(filed, 0, 12500, 2000);
+                        animateValue(resolved, 0, 11800, 2000);
+                        animateValue(departments, 0, 15, 1500);
+
+                        counterObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            const counters = document.getElementById('complaints-filed');
+            if (counters) {
+                counterObserver.observe(counters.parentElement.parentElement);
+            }
+
+            function animateValue(obj, start, end, duration) {
+                let startTimestamp = null;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString() + "+";
+                    if (progress < 1) window.requestAnimationFrame(step);
+                };
+                window.requestAnimationFrame(step);
+            }
+
+            // Scroll Animations
+            const scrollAnimations = document.querySelectorAll('.scroll-animation');
+            const scrollObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            scrollAnimations.forEach(el => scrollObserver.observe(el));
+
+            // Chart.js Graphs
+            const chartOptions = {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                    x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                },
+                plugins: { legend: { labels: { color: '#d1d5db' } } }
+            };
+
+            const dashboardPage = document.getElementById('dashboard');
+            const chartObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        new Chart(document.getElementById('complaintsChart').getContext('2d'), {
+                            type: 'bar',
+                            data: {
+                                labels: ['Municipal', 'College', 'Law', 'Police'],
+                                datasets: [
+                                    { label: 'Total', data: [30, 15, 12, 8], backgroundColor: 'rgba(59, 130, 246, 0.5)', borderColor: '#3b82f6', borderWidth: 1, borderRadius: 5 },
+                                    { label: 'Resolved', data: [25, 10, 8, 6], backgroundColor: 'rgba(16, 185, 129, 0.5)', borderColor: '#10b981', borderWidth: 1, borderRadius: 5 }
+                                ]
+                            },
+                            options: chartOptions
+                        });
+                        new Chart(document.getElementById('statusChart').getContext('2d'), {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Resolved', 'Pending', 'In Progress'],
+                                datasets: [{ data: [49, 14, 10], backgroundColor: ['rgba(16, 185, 129, 0.7)', 'rgba(234, 179, 8, 0.7)', 'rgba(59, 130, 246, 0.7)'], borderColor: ['#10b981', '#eab308', '#3b82f6'], borderWidth: 1 }]
+                            },
+                            options: { ...chartOptions, scales: {} }
+                        });
+                        new Chart(document.getElementById('trendChart').getContext('2d'), {
+                            type: 'line',
+                            data: {
+                                labels: ['March', 'April', 'May', 'June', 'July', 'August'],
+                                datasets: [{
+                                    label: 'Avg. Resolution Time (Days)',
+                                    data: [5.2, 4.8, 5.5, 4.2, 3.9, 3.5],
+                                    fill: true,
+                                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                                    borderColor: '#3b82f6',
+                                    tension: 0.4
+                                }]
+                            },
+                            options: chartOptions
+                        });
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            if (dashboardPage) chartObserver.observe(dashboardPage);
+
+
+            // Modal Logic
+            const authModal = document.getElementById('auth-modal');
+            const loginBtn = document.getElementById('login-btn');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            loginBtn.onclick = () => authModal.style.display = 'block';
+            closeModalBtn.onclick = () => authModal.style.display = 'none';
+            window.onclick = (e) => { if (e.target == authModal) authModal.style.display = 'none'; }
+            tabBtns.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabBtns.forEach(btn => btn.classList.remove('active', 'text-white', 'border-blue-500'));
+                    button.classList.add('active', 'text-white', 'border-blue-500');
+                    tabContents.forEach(c => c.classList.add('hidden'));
+                    document.getElementById(button.dataset.tab).classList.remove('hidden');
+                });
+            });
+
+            // Jarvis AI Chatbot Logic
+            const jarvisFab = document.getElementById('jarvis-fab');
+            const jarvisContainer = document.getElementById('jarvis-chat-container');
+            const closeJarvisBtn = document.getElementById('close-jarvis-btn');
+            const chatMessages = document.getElementById('chat-messages');
+            const chatInput = document.getElementById('chat-input');
+            const sendChatBtn = document.getElementById('send-chat-btn');
+
+            // --- DEVELOPER INSTRUCTION ---
+            // Replace 'YOUR_GEMINI_API_KEY' with your actual Google Gemini API key.
+            const geminiApiKey = 'YOUR_GEMINI_API_KEY';
+
+            jarvisFab.addEventListener('click', () => {
+                jarvisContainer.classList.toggle('open');
+            });
+            closeJarvisBtn.addEventListener('click', () => jarvisContainer.classList.remove('open'));
+
+            const addMessage = (text, sender) => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `flex mb-4 ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+                const sanitizedText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                messageDiv.innerHTML = `<div class="chat-bubble ${sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-jarvis'} p-3 rounded-lg"><p>${sanitizedText.replace(/\n/g, '<br>')}</p></div>`;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            };
+
+            const showTypingIndicator = () => {
+                const typingDiv = document.createElement('div');
+                typingDiv.id = 'typing-indicator';
+                typingDiv.className = 'flex justify-start mb-4';
+                typingDiv.innerHTML = `<div class="chat-bubble chat-bubble-jarvis p-3 rounded-lg"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
+                chatMessages.appendChild(typingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            const hideTypingIndicator = () => {
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) indicator.remove();
+            }
+            const handleChatSubmit = async () => {
+                const userMessage = chatInput.value.trim();
+                if (!userMessage) return;
+                addMessage(userMessage, 'user');
+                chatInput.value = '';
+
+                // Check if the API key has been replaced by the developer
+                if (geminiApiKey === 'YOUR_GEMINI_API_KEY' || !geminiApiKey) {
+                    addMessage('The AI assistant is not configured. Please contact the site administrator.', 'jarvis');
+                    return;
+                }
+
+                showTypingIndicator();
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;
+                const systemPrompt = "You are Jarvis, an AI assistant for CivicResolve. Your role is to help users with their civic complaints and legal questions. Be helpful, concise, and professional. Guide users on how to file effective complaints for issues related to their college, municipality, or local laws. You can also offer simplified legal information. Your persona is that of an advanced, reliable AI.";
+
+                const payload = {
+                    contents: [{
+                        parts: [{ text: userMessage }]
+                    }],
+                    systemInstruction: {
+                        parts: [{ text: systemPrompt }]
+                    }
+                };
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    hideTypingIndicator();
+                    if (!response.ok) {
+                        const error = await response.json();
+                        addMessage(`Sorry, an error occurred: ${error.error.message || response.statusText}`, 'jarvis');
+                        if (response.status === 400) addMessage('This may be due to an invalid API key configuration or a safety policy violation.', 'jarvis');
+                        return;
+                    }
+                    const data = await response.json();
+
+                    if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0]) {
+                        addMessage(data.candidates[0].content.parts[0].text, 'jarvis');
+                    } else if (data.candidates && data.candidates[0].finishReason === "SAFETY") {
+                        addMessage("I am unable to provide a response to that request due to safety policies.", 'jarvis');
+                    }
+                    else {
+                        addMessage("I couldn't generate a response. Please try again.", 'jarvis');
+                    }
+                } catch (error) {
+                    hideTypingIndicator();
+                    addMessage('Connection failed. Please check your network.', 'jarvis');
+                }
+            };
+            sendChatBtn.addEventListener('click', handleChatSubmit);
+            chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleChatSubmit(); });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced Portfolio • Canva Code</title>
+    <meta name="description" content="Modern personal portfolio with smooth animations, filters, and dark mode." />
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind config: enable dark mode via class
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef8ff',
+                            100: '#d9eeff',
+                            200: '#b7ddff',
+                            300: '#88c8ff',
+                            400: '#57adff',
+                            500: '#308fff',
+                            600: '#1f70f2',
+                            700: '#1b59c5',
+                            800: '#1c4aa0',
+                            900: '#1b417f',
+                        }
+                    },
+                    boxShadow: {
+                        glow: '0 0 0 2px rgba(48,143,255,0.3), 0 10px 30px rgba(0,0,0,0.2)'
+                    },
+                    keyframes: {
+                        floaty: {
+                            '0%,100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-6px)' }
+                        },
+                        fadeUp: {
+                            '0%': { opacity: 0, transform: 'translateY(16px)' },
+                            '100%': { opacity: 1, transform: 'translateY(0)' }
+                        },
+                        spinStroke: {
+                            '0%': { strokeDashoffset: 280 },
+                            '100%': { strokeDashoffset: 0 }
+                        },
+                        gradientShift: {
+                            '0%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
+                            '100%': { backgroundPosition: '0% 50%' }
+                        }
+                    },
+                    animation: {
+                        floaty: 'floaty 3s ease-in-out infinite',
+                        fadeUp: 'fadeUp .7s ease forwards',
+                        spinStroke: 'spinStroke 1.2s ease forwards',
+                        gradientShift: 'gradientShift 10s ease infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Loader styling */
+        .loader-overlay {
+            backdrop-filter: blur(6px);
+        }
+
+        .flip {
+            transform-style: preserve-3d;
+            transition: transform .7s cubic-bezier(.2, .8, .2, 1);
+        }
+
+        .flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flip-face {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .flip-back {
+            transform: rotateY(180deg);
+        }
+
+        .type-caret::after {
+            content: '|';
+            margin-left: 4px;
+            opacity: 1;
+            animation: caret 1s step-start infinite;
+        }
+
+        @keyframes caret {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        header.scrolled {
+            backdrop-filter: saturate(1.6) blur(8px);
+        }
+
+        /* Section switcher */
+        .page-section {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity .4s ease, transform .4s ease;
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Contact fancy background */
+        .contact-bg {
+            background: linear-gradient(120deg, rgba(48, 143, 255, .25), rgba(139, 92, 246, .25), rgba(16, 185, 129, .25));
+            background-size: 200% 200%;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-gradient-to-br from-slate-900 via-slate-950 to-black text-white min-h-screen font-sans selection:bg-brand-500/30 selection:text-white">
+
+    <!-- Loader
+    <div id="loader" class="fixed inset-0 z-[9999] loader-overlay bg-black/60 grid place-items-center">
+        <div class="relative">
+            <svg width="120" height="120" viewBox="0 0 120 120" class="animate-floaty">
+                <circle cx="60" cy="60" r="44" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="10"
+                    stroke-linecap="round"></circle>
+                <circle cx="60" cy="60" r="44" fill="none" stroke="#308fff" stroke-width="10" stroke-linecap="round"
+                    stroke-dasharray="280" class="animate-spinStroke"></circle>
+            </svg>
+            <div class="absolute inset-0 grid place-items-center text-center">
+                <div class="text-lg tracking-widest text-white/80">ME</div>
+                <div class="text-[10px] mt-1 text-white/50">Loading</div>
+            </div>
+        </div>
+    </div> -->
+
+    <!-- Sticky Navbar -->
+    <header id="siteHeader" class="fixed top-0 inset-x-0 z-50 transition-all bg-black/30">
+        <div class="max-w-7xl mx-auto px-5">
+            <div class="h-16 flex items-center justify-between">
+                <a href="#home" class="group inline-flex items-center gap-3">
+                    <div
+                        class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-violet-500 grid place-items-center shadow-glow">
+                        <span class="font-bold text-sm">ME</span>
+                    </div>
+                    <span class="font-semibold tracking-tight text-white group-hover:text-brand-200 transition">My
+                        Portfolio</span>
+                </a>
+                <nav class="hidden md:flex items-center gap-2">
+                    <a data-link="home" href="#home"
+                        class="nav-link px-4 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition">Home</a>
+                    <a data-link="projects" href="#projects"
+                        class="nav-link px-4 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition">Projects</a>
+                    <a data-link="about" href="#about"
+                        class="nav-link px-4 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition">About</a>
+                    <a data-link="contact" href="#contact"
+                        class="nav-link px-4 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition">Contact</a>
+                </nav>
+                <div class="flex items-center gap-2">
+                    <!-- Dark mode toggle -->
+                    <button id="themeToggle" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition"
+                        aria-label="Toggle theme">
+                        <span id="themeIcon" class="inline-block">
+                            <!-- Sun icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 hidden dark:block"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="12" r="4"></circle>
+                                <path
+                                    d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.536-7.536L16.121 5.88M7.879 16.121l-1.415 1.415m12.02 0l-1.415-1.415M7.88 7.88L6.465 6.465">
+                                </path>
+                            </svg>
+                            <!-- Moon icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 dark:hidden" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor">
+                                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+                            </svg>
+                        </span>
+                    </button>
+                    <!-- Personalize panel button -->
+                    <button id="openSettings"
+                        class="px-3 py-2 rounded-lg bg-gradient-to-r from-brand-500 to-violet-500 hover:shadow-glow transition text-sm font-semibold">
+                        Personalize
+                    </button>
+                    <button class="md:hidden px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10" id="openMenu"
+                        aria-label="Open menu">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor">
+                            <path d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <!-- Mobile menu -->
+            <div id="mobileMenu" class="md:hidden hidden pb-4">
+                <nav class="grid gap-2">
+                    <a data-link="home" href="#home"
+                        class="nav-link block px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition">Home</a>
+                    <a data-link="projects" href="#projects"
+                        class="nav-link block px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition">Projects</a>
+                    <a data-link="about" href="#about"
+                        class="nav-link block px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition">About</a>
+                    <a data-link="contact" href="#contact"
+                        class="nav-link block px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/5 transition">Contact</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Side Settings Panel -->
+    <div id="settingsPanel"
+        class="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-slate-900/95 backdrop-blur-xl border-l border-white/10 z-[60] translate-x-full transition-transform">
+        <div class="h-16 px-6 flex items-center justify-between border-b border-white/10">
+            <h3 class="font-semibold">Personalize</h3>
+            <button id="closeSettings" class="p-2 rounded-lg hover:bg-white/5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor">
+                    <path d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="p-6 grid gap-5 text-sm">
+            <div>
+                <label class="block text-white/70 mb-2">Your Name</label>
+                <input id="inpName"
+                    class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    placeholder="John Doe">
+            </div>
+            <div>
+                <label class="block text-white/70 mb-2">Roles (comma separated)</label>
+                <input id="inpRoles"
+                    class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    placeholder="Frontend Developer, Web Designer, React Expert">
+            </div>
+            <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-white/70 mb-2">WhatsApp Number</label>
+                    <input id="inpWhatsApp"
+                        class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        placeholder="e.g., 15551234567">
+                </div>
+                <div>
+                    <label class="block text-white/70 mb-2">Email</label>
+                    <input id="inpEmail"
+                        class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        placeholder="me@example.com">
+                </div>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-white/70 mb-2">GitHub URL</label>
+                    <input id="inpGithub"
+                        class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        placeholder="https://github.com/username">
+                </div>
+                <div>
+                    <label class="block text-white/70 mb-2">LinkedIn URL</label>
+                    <input id="inpLinkedin"
+                        class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        placeholder="https://linkedin.com/in/username">
+                </div>
+            </div>
+            <div>
+                <label class="block text-white/70 mb-2">Hero Photo URL (optional)</label>
+                <input id="inpPhoto"
+                    class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    placeholder="https://.../photo.jpg">
+            </div>
+            <button id="saveSettings"
+                class="mt-2 px-4 py-2 rounded-lg bg-gradient-to-r from-brand-500 to-violet-500 hover:shadow-glow font-semibold">Save</button>
+            <p class="text-white/60 text-xs">Tip: All settings are saved on your device.</p>
+        </div>
+    </div>
+    <div id="settingsBackdrop" class="fixed inset-0 bg-black/40 z-[55] hidden"></div>
+
+    <!-- Main -->
+    <main class="pt-24 pb-24">
+        <!-- Home -->
+        <section id="home" class="page-section active">
+            <div class="max-w-7xl mx-auto px-5">
+                <div class="grid lg:grid-cols-2 gap-10 items-center">
+                    <!-- Text side -->
+                    <div class="space-y-6 animate-fadeUp">
+                        <div
+                            class="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs text-white/70">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            I’m Available for Work ✅
+                        </div>
+                        <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight">
+                            <span id="heroName">Hi, I’m Your Name</span>
+                            <span
+                                class="block text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-violet-400">I
+                                build delightful web experiences</span>
+                        </h1>
+                        <p class="text-white/70 max-w-xl">Frontend-focused developer crafting fast, accessible and
+                            visually stunning interfaces with a keen eye for detail.</p>
+                        <div class="text-brand-300 text-lg">
+                            <span class="text-white/70">I’m a</span>
+                            <span class="type-caret font-semibold" id="typedRole">Frontend Developer</span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <a id="ctaViewWork" href="#projects"
+                                class="px-5 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-violet-500 hover:shadow-glow transition font-semibold">View
+                                My Work</a>
+                            <div class="flex items-center gap-2">
+                                <!-- WhatsApp -->
+                                <a id="iconWhatsApp" target="_blank"
+                                    class="group p-3 rounded-xl bg-white/5 hover:bg-white/10 transition"
+                                    href="https://wa.me/15551234567?text=Hello%2C%20I%20saw%20your%20portfolio">
+                                    <svg class="w-5 h-5 text-green-400 group-hover:scale-110 transition"
+                                        xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256">
+                                        <path
+                                            d="M187.6,170.5a15.9,15.9,0,0,1-14.2,8.3h0a83.2,83.2,0,0,1-35.8-8.7c-17.6-8.5-31.2-22-39.8-39.6a83.2,83.2,0,0,1-8.7-35.9,16,16,0,0,1,8.3-14.3,15.9,15.9,0,0,1,15.6-.5l14.1,7.1a16,16,0,0,1,8.6,21.1l-3.2,7.5a51.6,51.6,0,0,0,25.7,25.6l7.5-3.1a16,16,0,0,1,21.1,8.6l7.1,14.2A16,16,0,0,1,187.6,170.5ZM232,128A104,104,0,0,1,82.8,219.4L36,232l12.6-46.8A104,104,0,1,1,232,128Z" />
+                                    </svg>
+                                </a>
+                                <!-- GitHub -->
+                                <a id="iconGithub" target="_blank"
+                                    class="group p-3 rounded-xl bg-white/5 hover:bg-white/10 transition"
+                                    href="https://github.com/">
+                                    <svg class="w-5 h-5 text-white/90 group-hover:scale-110 transition"
+                                        xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            d="M12 .5A12 12 0 0 0 0 12.7c0 5.4 3.4 10 8.2 11.6.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1.1-.8.1-.8.1-.8 1.2.1 1.9 1.2 1.9 1.2 1.1 1.9 2.9 1.3 3.6 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.6-1.4-5.6-6.2 0-1.4.5-2.6 1.2-3.5-.1-.3-.5-1.7.1-3.6 0 0 1-.3 3.4 1.3 1-.3 2.1-.5 3.2-.5s2.2.2 3.2.5c2.4-1.6 3.4-1.3 3.4-1.3.6 1.9.2 3.3.1 3.6.8.9 1.2 2.1 1.2 3.5 0 4.8-2.9 5.8-5.6 6.2.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.9.6A12.2 12.2 0 0 0 24 12.7 12 12 0 0 0 12 .5" />
+                                    </svg>
+                                </a>
+                                <!-- LinkedIn -->
+                                <a id="iconLinkedin" target="_blank"
+                                    class="group p-3 rounded-xl bg-white/5 hover:bg-white/10 transition"
+                                    href="https://linkedin.com/in/">
+                                    <svg class="w-5 h-5 text-sky-400 group-hover:scale-110 transition"
+                                        xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256">
+                                        <path
+                                            d="M216,20H40A20,20,0,0,0,20,40V216a20,20,0,0,0,20,20H216a20,20,0,0,0,20-20V40A20,20,0,0,0,216,20ZM96,200H64V112H96ZM80,98a18,18,0,1,1,18-18A18,18,0,0,1,80,98ZM200,200H168V152c0-10.7-1.9-18-12-18s-14,7.3-14,18v48H110V112h24v12.2a28.1,28.1,0,0,1,25-13.4c17.7,0,41,11.1,41,46.7Z" />
+                                    </svg>
+                                </a>
+                                <!-- Email -->
+                                <a id="iconEmail" class="group p-3 rounded-xl bg-white/5 hover:bg-white/10 transition"
+                                    href="mailto:me@example.com">
+                                    <svg class="w-5 h-5 text-rose-300 group-hover:scale-110 transition"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path d="M4 4h16v16H4z" />
+                                        <path d="M22 6l-10 7L2 6" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Photo side -->
+                    <div class="relative max-w-lg mx-auto lg:mx-0 animate-fadeUp">
+                        <div
+                            class="absolute -inset-1 bg-gradient-to-br from-brand-500/40 to-violet-500/40 blur-2xl rounded-[2rem]">
+                        </div>
+                        <div class="relative rounded-[2rem] p-1 bg-white/5 border border-white/10">
+                            <div
+                                class="rounded-[1.75rem] overflow-hidden aspect-square grid place-items-center bg-gradient-to-br from-slate-800 to-slate-900">
+                                <img id="heroPhoto" alt="Your photo" class="w-full h-full object-cover hidden"
+                                    onerror="this.src=''; this.alt='Image failed to load'; this.style.display='none';">
+                                <!-- SVG avatar fallback -->
+                                <svg id="heroAvatar" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"
+                                    class="w-3/4 h-3/4">
+                                    <defs>
+                                        <linearGradient id="grad" x1="0" x2="1" y1="0" y2="1">
+                                            <stop offset="0" stop-color="#308fff" />
+                                            <stop offset="1" stop-color="#8b5cf6" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="100" cy="100" r="90" fill="url(#grad)" opacity=".2" />
+                                    <circle cx="100" cy="80" r="36" fill="#94a3b8" />
+                                    <rect x="40" y="120" width="120" height="60" rx="28" fill="#64748b" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tech badges -->
+                <div class="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 px-4 py-3">
+                        <span class="w-2 h-2 bg-cyan-400 rounded-full"></span><span class="text-white/80">React</span>
+                    </div>
+                    <div class="flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 px-4 py-3">
+                        <span class="w-2 h-2 bg-sky-400 rounded-full"></span><span class="text-white/80">Tailwind</span>
+                    </div>
+                    <div class="flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 px-4 py-3">
+                        <span class="w-2 h-2 bg-emerald-400 rounded-full"></span><span
+                            class="text-white/80">MongoDB</span>
+                    </div>
+                    <div class="flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 px-4 py-3">
+                        <span class="w-2 h-2 bg-amber-400 rounded-full"></span><span class="text-white/80">UI/UX</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects -->
+        <section id="projects" class="page-section">
+            <div class="max-w-7xl mx-auto px-5">
+                <div class="flex items-end justify-between gap-4">
+                    <div>
+                        <h2 class="text-3xl font-extrabold">Projects</h2>
+                        <p class="text-white/60 mt-1">Interactive cards with 3D flip and filters</p>
+                    </div>
+                    <div class="flex gap-2 flex-wrap">
+                        <button data-filter="all"
+                            class="filter-btn px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition text-sm">All</button>
+                        <button data-filter="React"
+                            class="filter-btn px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition text-sm">React</button>
+                        <button data-filter="PHP"
+                            class="filter-btn px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition text-sm">PHP</button>
+                        <button data-filter="AI"
+                            class="filter-btn px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition text-sm">AI</button>
+                        <button data-filter="UI"
+                            class="filter-btn px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition text-sm">UI
+                            Projects</button>
+                    </div>
+                </div>
+
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+                    <!-- Project Card -->
+                    <div class="group perspective">
+                        <div class="flip bg-white/5 border border-white/10 rounded-2xl overflow-hidden"
+                            data-category="React">
+                            <div class="flip-face p-5 min-h-[260px] flex flex-col justify-between">
+                                <div>
+                                    <div
+                                        class="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs">
+                                        React</div>
+                                    <h3 class="text-xl font-bold mt-4">Realtime Chat UI</h3>
+                                    <p class="text-white/70 mt-2">Responsive chat interface with typing indicators,
+                                        message grouping, and theme switch.</p>
+                                </div>
+                                <button
+                                    class="mt-4 px-4 py-2 rounded-lg bg-gradient-to-r from-brand-500 to-violet-500 hover:shadow-glow transition flip-toggle">View
+                                    Details</button>
+                            </div>
+                            <div class="flip-face flip-back p-5 min-h-[260px] bg-slate-900/60">
+                                <h4 class="text-lg font-semibold">Realtime Chat UI</h4>
+                                <div class="mt-2 text-white/70">Built with: React, Tailwind, Socket patterns</div>
+                                <ul class="mt-3 text-sm text-white/70 list-disc pl-5">
+                                    <li>Typing effects and read receipts</li>
+                                    <li>Accessible keyboard navigation</li>
+                                    <li>Dark/Light themes</li>
+                                </ul>
+                                <div class="flex gap-2 mt-4">
+                                    <a target="_blank" href="https://github.com/"
+                                        class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm">GitHub</a>
+                                    <a target="_blank" href="https://example.com"
+                                        class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm">Live Site</a>
+                                </div>
+                                <button
+                                    class="mt-4 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 flip-toggle">Back</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Project Card -->
+                    <div class="group perspective">
+                        <div class="flip bg-white/5 border border-white/10 rounded-2xl overflow-hidden"
+                            data-category="AI">
+                            <div class="flip-face p-5 min-h-[260px] flex flex-col justify-between">
+                                <div>
+                                    <div
+                                        class="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 text-fuchsia-300 text-xs">
+                                        AI</div>
+                                    <h3 class="text-xl font-bold mt-4">Image Captioner</h3>
+                                    <p class="text-white/70 mt-2">Uploads an image and generates captions with
+                                        confidence tags.</p>
+                                </div>
+                                <button
+                                    class="mt-4 px-4 py-2 rounded-lg bg-gradient-to-r from-brand-500 to-violet-500 hover:shadow-glow transition flip-toggle">View
+                                    Details</button>
+                            </div>
+                            <div class="flip-face flip-back p-5 min-h-[260px] bg-slate-900/60">
+                                <h4 class="text-lg font-semibold">Image Captioner</h4>
+                                <div class="mt-2 text-white/70">Built with: Vision APIs, Tailwind</div>
+                                <ul class="mt-3 text-sm text-white/70 list-disc pl-5">
+                                    <li>Batch processing</li>
+                                    <li>Confidence badges</li>
+                                    <li>Download results</li>
+                                </ul>
+                                <div class="flex gap-2 mt-4">
+                                    <a target="_blank" href="https://github.com/"
+                                        class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm">GitHub</a>
+                                    <a target="_blank" href="https://example.com"
+                                        class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm">Live Site</a>
+                                </div>
+                                <button
+                                    class="mt-4 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 flip-toggle">Back</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Project Card -->
+                    <div class="group perspective">
+                        <div class="flip bg-white/5 border border-white/10 rounded-2xl overflow-hidden"
+                            data-category="UI">
+                            <div class="flip-face p-5 min-h-[260px] flex flex-col justify-between">
+                                <div>
+                                    <div
+                                        class="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs">
+                                        UI Projects</div>
+                                    <h3 class="text-xl font-bold mt-4">3D Pricing Cards</h3>
+                                    <p class="text-white/70 mt-2">Animated pricing tiles with tilt, parallax and subtle
+                                        reflections.</p>
+                                </div>
+                                <button
+                                    class="mt-4 px-4 py-2 rounded-lg bg-gradient-to-r from-brand-500 to-violet-500 hover:shadow-glow transition flip-toggle">View
+                                    Details</button>
+                            </div>
+                            <div class="flip-face flip-back p-5 min-h-[260px] bg-slate-900/60">
+                                <h4 class="text-lg font-semibold">3D Pricing Cards</h4>
+                                <div class="mt-2 text-white/70">Built with: Tailwind, CSS transforms</div>
+                                <ul class="mt-3 text-sm text-white/70 list-disc pl-5">
+                                    <li>Tilt on hover</li>
+                                    <li>Flip to reveal details</li>
+                                    <li>Responsive layout</li>
+                                </ul>
+                                <div class="flex gap-2 mt-4">
+                                    <a target="_blank" href="https://github.com/"
+                                        class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm">GitHub</a>
+                                    <a target="_blank" href="https://example.com"
+                                        class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm">Live Site</a>
+                                </div>
+                                <button
+                                    class="mt-4 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 flip-toggle">Back</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Project Card -->
+                    <div class="group perspective">
+                        <div class="flip bg-white/5 border border-white/10 rounded-2xl overflow-hidden"
+                            data-category="PHP">
+                            <div class="flip-face p-5 min-h-[260px] flex flex-col justify-between">
+                                <div>
+                                    <div
+                                        class="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-300 text-xs">
+                                        PHP</div>
+                                    <h3 class="text-xl font-bold mt-4">Blog CMS</h3>
+                                    <p class="text-white/70 mt-2">Lightweight content system with tags, drafts and media
+                                        manager.</p>
+                                </div>
+                                <button
+                                    class="mt-4 px-4 py-2 rounded-lg bg-gradient-to-r from-brand-500 to-violet-500 hover:shadow-glow transition flip-toggle">View
+                                    Details</button>
+                            </div>
+                            <div class="flip-face flip-back p-5 min-h-[260px] bg-slate-900/60">
+                                <h4 class="text-lg font-semibold">Blog CMS</h4>
+                                <div class="mt-2 text-white/70">Built with: PHP, MySQL, Tailwind</div>
+                                <ul class="mt-3 text-sm text-white/70 list-disc pl-5">
+                                    <li>Role-based access</li>
+                                    <li>Media uploads</li>
+                                    <li>SEO settings</li>
+                                </ul>
+                                <div class="flex gap-2 mt-4">
+                                    <a target="_blank" href="https://github.com/"
+                                        class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm">GitHub</a>
+                                    <a target="_blank" href="https://example.com"
+                                        class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm">Live Site</a>
+                                </div>
+                                <button
+                                    class="mt-4 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 flip-toggle">Back</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Add more cards as needed -->
+                </div>
+            </div>
+        </section>
+
+        <!-- About -->
+        <section id="about" class="page-section">
+            <div class="max-w-7xl mx-auto px-5">
+                <div class="grid lg:grid-cols-3 gap-10 items-start">
+                    <div class="lg:col-span-1">
+                        <h2 class="text-3xl font-extrabold">About Me</h2>
+                        <p class="text-white/70 mt-2">A quick snapshot of my journey, skills and achievements.</p>
+                        <div class="mt-6 p-5 rounded-2xl bg-white/5 border border-white/10">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-16 h-16 rounded-xl bg-gradient-to-br from-brand-500/30 to-violet-500/30 grid place-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white/80"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M12 20l9-5-9-5-9 5 9 5z" />
+                                        <path d="M12 12l9-5-9-5-9 5 9 5z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-white/90 font-semibold">Completed Projects</div>
+                                    <div class="text-white/60 text-sm">24+ and counting</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div class="lg:col-span-2">
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+                                <h3 class="font-semibold">Experience Timeline</h3>
+                                <div class="mt-4 relative">
+                                    <div class="absolute left-3 top-0 bottom-0 w-0.5 bg-white/10"></div>
+                                    <div class="relative pl-10">
+                                        <div class="flex items-start gap-4 mb-6 opacity-0 translate-y-4 timeline-item">
+                                            <div class="w-6 h-6 rounded-full bg-brand-400"></div>
+                                            <div>
+                                                <div class="font-semibold">Frontend Developer • 2023–Present</div>
+                                                <div class="text-white/70 text-sm">Building modern interfaces with
+                                                    reusable components and smooth interactions.</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start gap-4 mb-6 opacity-0 translate-y-4 timeline-item">
+                                            <div class="w-6 h-6 rounded-full bg-violet-400"></div>
+                                            <div>
+                                                <div class="font-semibold">UI Designer • 2021–2023</div>
+                                                <div class="text-white/70 text-sm">Translating ideas into intuitive
+                                                    layouts with attention to detail.</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start gap-4 opacity-0 translate-y-4 timeline-item">
+                                            <div class="w-6 h-6 rounded-full bg-emerald-400"></div>
+                                            <div>
+                                                <div class="font-semibold">Freelancer • 2019–2021</div>
+                                                <div class="text-white/70 text-sm">Delivered websites for startups and
+                                                    small businesses worldwide.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Skills -->
+                            <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+                                <h3 class="font-semibold">Skills</h3>
+                                <div class="mt-4 grid gap-4">
+                                    <div>
+                                        <div class="flex justify-between text-sm">
+                                            <span>React</span><span>90%</span>
+                                        </div>
+                                        <div class="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
+                                            <div class="h-2 rounded-full bg-gradient-to-r from-brand-500 to-violet-500 w-0 progress"
+                                                data-target="90"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm">
+                                            <span>Tailwind</span><span>85%</span>
+                                        </div>
+                                        <div class="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
+                                            <div class="h-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 w-0 progress"
+                                                data-target="85"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm">
+                                            <span>UI/UX</span><span>80%</span>
+                                        </div>
+                                        <div class="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
+                                            <div class="h-2 rounded-full bg-gradient-to-r from-amber-400 to-pink-400 w-0 progress"
+                                                data-target="80"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm">
+                                            <span>Node/Express</span><span>70%</span>
+                                        </div>
+                                        <div class="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
+                                            <div class="h-2 rounded-full bg-gradient-to-r from-sky-400 to-indigo-500 w-0 progress"
+                                                data-target="70"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Short Intro -->
+                        <div class="mt-8 grid md:grid-cols-[1fr,160px] gap-6 items-center">
+                            <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+                                <div class="text-white/80">With a love for clean design and smooth interactions, I focus
+                                    on creating delightful experiences that feel as good as they look. Outside of
+                                    coding, you’ll find me sketching UI ideas and exploring new tools.</div>
+                            </div>
+                            <div class="rounded-2xl border border-white/10 p-3 bg-white/5 grid place-items-center">
+                                <div
+                                    class="w-28 h-28 rounded-full bg-gradient-to-br from-brand-500/40 to-violet-500/40 grid place-items-center contact-bg animate-gradientShift">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-white/80"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M12 12c2.761 0 5-2.239 5-5S14.761 2 12 2 7 4.239 7 7s2.239 5 5 5z" />
+                                        <path d="M20.285 21a8.966 8.966 0 0 0-16.57 0" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact -->
+        <section id="contact" class="page-section">
+            <div class="max-w-7xl mx-auto px-5">
+                <div class="grid lg:grid-cols-2 gap-10 items-stretch">
+                    <div
+                        class="p-6 rounded-2xl bg-white/5 border border-white/10 relative overflow-hidden contact-bg animate-gradientShift">
+                        <div class="absolute -top-12 -right-12 w-56 h-56 rounded-full bg-brand-500/20 blur-3xl"></div>
+                        <div class="absolute -bottom-12 -left-12 w-72 h-72 rounded-full bg-violet-500/20 blur-3xl">
+                        </div>
+                        <h2 class="text-3xl font-extrabold relative">Contact</h2>
+                        <p class="text-white/70 mt-2 relative">Let’s collaborate! Send a message or ping me on WhatsApp.
+                        </p>
+
+                        <form id="contactForm" class="relative mt-6 grid gap-4">
+                            <div class="grid sm:grid-cols-2 gap-4">
+                                <input required name="name" placeholder="Your Name"
+                                    class="px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <input required type="email" name="email" placeholder="Your Email"
+                                    class="px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            </div>
+                            <input required name="subject" placeholder="Subject"
+                                class="px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <textarea required name="message" placeholder="Message" rows="5"
+                                class="px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+
+                            <div class="flex flex-wrap items-center gap-3">
+                                <button
+                                    class="px-5 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-violet-500 hover:shadow-glow transition font-semibold"
+                                    type="submit">Send Message (Demo)</button>
+                                <a id="waButton" target="_blank"
+                                    class="px-4 py-3 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30"
+                                    href="https://wa.me/15551234567?text=Hello%2C%20I%20saw%20your%20portfolio">WhatsApp</a>
+                                <div
+                                    class="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs text-white/70">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    <span id="liveStatusText">I’m Available for Work ✅</span>
+                                </div>
+                                <label class="flex items-center gap-2 text-white/70 text-sm cursor-pointer select-none">
+                                    <input id="statusToggle" type="checkbox"
+                                        class="appearance-none peer w-10 h-6 rounded-full bg-white/10 border border-white/10 relative transition">
+                                    <span
+                                        class="absolute ml-[2.2rem] w-4 h-4 rounded-full bg-white/70 translate-x-0 peer-checked:translate-x-4 transition -ml-8 mt-1.5"></span>
+                                    Toggle status
+                                </label>
+                            </div>
+                            <p class="text-xs text-white/60">Note: Sending is in Demo mode here. Hook up EmailJS or your
+                                API for real delivery.</p>
+                        </form>
+                    </div>
+
+                    <div class="grid gap-6">
+                        <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+                            <h3 class="font-semibold">Quick Links</h3>
+                            <div class="mt-4 grid sm:grid-cols-2 gap-3">
+                                <a id="quickEmail" href="mailto:me@example.com"
+                                    class="px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10">Email
+                                    Me</a>
+                                <a id="quickGithub" href="https://github.com/" target="_blank"
+                                    class="px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10">GitHub</a>
+                                <a id="quickLinkedin" href="https://linkedin.com/in/" target="_blank"
+                                    class="px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10">LinkedIn</a>
+                                <a id="quickWhatsApp"
+                                    href="https://wa.me/15551234567?text=Hello%2C%20I%20saw%20your%20portfolio"
+                                    target="_blank"
+                                    class="px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10">WhatsApp</a>
+                            </div>
+                        </div>
+
+                        <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+                            <h3 class="font-semibold">Where I Work</h3>
+                            <p class="text-white/70 mt-2">Map embeds aren’t available here, so enjoy this animated
+                                background badge instead.</p>
+                            <div
+                                class="mt-4 h-40 rounded-xl contact-bg animate-gradientShift border border-white/10 grid place-items-center">
+                                <span class="text-white/70">🌎 Remote • Global</span>
+                            </div>
+                        </div>
+
+                        <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+                            <h3 class="font-semibold">Availability</h3>
+                            <p class="text-white/70 mt-2">Set your current status using the toggle in the form.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 404 -->
+        <section id="not-found" class="page-section">
+            <div class="max-w-4xl mx-auto px-5 grid place-items-center text-center min-h-[60vh]">
+                <div
+                    class="w-48 h-48 rounded-full bg-white/5 border border-white/10 grid place-items-center relative overflow-hidden">
+                    <div class="absolute inset-0 contact-bg animate-gradientShift opacity-50"></div>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 text-white/80 relative" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="10" opacity=".4"></circle>
+                        <path d="M9 9l6 6M15 9l-6 6"></path>
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-extrabold mt-6">Page Not Found</h2>
+                <p class="text-white/70 mt-2">The page you’re looking for doesn’t exist or has moved.</p>
+                <a href="#home"
+                    class="mt-6 px-5 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-violet-500 hover:shadow-glow transition font-semibold">Go
+                    Home</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 bg-black/20">
+        <div class="max-w-7xl mx-auto px-5 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="text-white/60 text-sm">© <span id="year"></span> Your Name. All rights reserved.</div>
+            <div class="text-white/50 text-xs">Built with love, smooth animations, and dark mode ✨</div>
+        </div>
+    </footer>
+
+    <!-- Toast -->
+    <div id="toast"
+        class="fixed bottom-5 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg bg-white/10 border border-white/10 text-white/90 opacity-0 pointer-events-none transition">
+        <span id="toastText">Copied!</span>
+    </div>
+
+    <!-- Floating WhatsApp -->
+    <a id="fabWhatsApp" href="https://wa.me/15551234567?text=Hello%2C%20I%20saw%20your%20portfolio" target="_blank"
+        class="fixed bottom-6 right-6 w-14 h-14 rounded-2xl grid place-items-center bg-emerald-500 shadow-glow hover:scale-105 transition z-40">
+        <svg class="w-7 h-7 text-white" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256">
+            <path
+                d="M187.6,170.5a15.9,15.9,0,0,1-14.2,8.3h0a83.2,83.2,0,0,1-35.8-8.7c-17.6-8.5-31.2-22-39.8-39.6a83.2,83.2,0,0,1-8.7-35.9,16,16,0,0,1,8.3-14.3,15.9,15.9,0,0,1,15.6-.5l14.1,7.1a16,16,0,0,1,8.6,21.1l-3.2,7.5a51.6,51.6,0,0,0,25.7,25.6l7.5-3.1a16,16,0,0,1,21.1,8.6l7.1,14.2A16,16,0,0,1,187.6,170.5ZM232,128A104,104,0,0,1,82.8,219.4L36,232l12.6-46.8A104,104,0,1,1,232,128Z" />
+        </svg>
+    </a>
+
+    <!-- Demo Modal -->
+    <div id="modal" class="fixed inset-0 z-[70] hidden">
+        <div class="absolute inset-0 bg-black/50"></div>
+        <div class="relative max-w-lg mx-auto mt-24 bg-slate-900/95 border border-white/10 rounded-2xl p-6">
+            <div class="flex items-start justify-between">
+                <h3 class="font-semibold">Demo message ready</h3>
+                <button id="closeModal" class="p-2 rounded-lg hover:bg-white/5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor">
+                        <path d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <p class="text-white/70 mt-2">This environment doesn’t send emails directly. Choose an option below:</p>
+            <div class="mt-4 grid gap-3">
+                <button id="btnCopy" class="px-4 py-3 rounded-lg bg-white/10 hover:bg-white/20">Copy message</button>
+                <a id="btnMailto"
+                    class="px-4 py-3 rounded-lg bg-brand-500/20 text-brand-200 border border-brand-500/30 hover:bg-brand-500/30"
+                    href="#">Open in email app</a>
+                <a id="btnWhatsAppModal"
+                    class="px-4 py-3 rounded-lg bg-emerald-500/20 text-emerald-200 border border-emerald-500/30 hover:bg-emerald-500/30"
+                    target="_blank" href="#">Send via WhatsApp</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Helpers
+        const $ = (sel, ctx = document) => ctx.querySelector(sel);
+        const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+        const storage = {
+            get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d } catch { return d } },
+            set(k, v) { localStorage.setItem(k, JSON.stringify(v)) }
+        };
+
+        // Initial settings / personalization
+        const defaults = {
+            name: 'Your Name',
+            roles: ['Frontend Developer', 'Web Designer', 'React Expert'],
+            whatsapp: '15551234567',
+            github: 'https://github.com/',
+            linkedin: 'https://linkedin.com/in/',
+            email: 'me@example.com',
+            photo: ''
+        };
+        const state = storage.get('portfolioSettings', defaults);
+
+        function applySettings() {
+            $('#heroName').textContent = `Hi, I’m ${state.name}`;
+            // Typed roles reset
+            roles = Array.isArray(state.roles) ? state.roles : String(state.roles || '').split(',').map(s => s.trim()).filter(Boolean);
+            if (roles.length === 0) roles = defaults.roles;
+
+            // Links everywhere
+            const waMsg = encodeURIComponent('Hello, I saw your portfolio');
+            const wa = `https://wa.me/${state.whatsapp}?text=${waMsg}`;
+            $('#iconWhatsApp').href = wa;
+            $('#quickWhatsApp').href = wa;
+            $('#fabWhatsApp').href = wa;
+            $('#waButton').href = wa;
+
+            $('#iconGithub').href = state.github || defaults.github;
+            $('#quickGithub').href = state.github || defaults.github;
+            $('#iconLinkedin').href = state.linkedin || defaults.linkedin;
+            $('#quickLinkedin').href = state.linkedin || defaults.linkedin;
+
+            const mail = `mailto:${state.email || defaults.email}`;
+            $('#iconEmail').href = mail;
+            $('#quickEmail').href = mail;
+
+            // Photo
+            const photoURL = state.photo?.trim();
+            const img = $('#heroPhoto');
+            const avatar = $('#heroAvatar');
+            if (photoURL) {
+                img.src = photoURL;
+                img.style.display = 'block';
+                avatar.classList.add('hidden');
+            } else {
+                img.src = '';
+                img.style.display = 'none';
+                avatar.classList.remove('hidden');
+            }
+        }
+
+        // Theme
+        function applyTheme() {
+            const theme = storage.get('theme', 'dark');
+            if (theme === 'dark') document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+        }
+        applyTheme();
+
+        $('#themeToggle').addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            storage.set('theme', isDark ? 'dark' : 'light');
+        });
+
+        // Loader
+        // window.addEventListener('load', () => {
+        //     setTimeout(() => { $('#loader')?.classList.add('opacity-0'); setTimeout(() => $('#loader')?.remove(), 300); }, 700);
+        // });
+
+        // Sticky header on scroll + active link highlight
+        const header = $('#siteHeader');
+        const navLinks = $$('.nav-link');
+        const sections = ['home', 'projects', 'about', 'contact'];
+
+        function setActiveLink(section) {
+            navLinks.forEach(a => {
+                a.classList.toggle('bg-white/10', a.dataset.link === section);
+                a.classList.toggle('text-white', a.dataset.link === section);
+                a.classList.toggle('text-white/80', a.dataset.link !== section);
+            });
+        }
+
+        function onScroll() {
+            if (window.scrollY > 4) header.classList.add('scrolled');
+            else header.classList.remove('scrolled');
+        }
+        window.addEventListener('scroll', onScroll);
+
+        // Mobile menu
+        $('#openMenu').addEventListener('click', () => {
+            $('#mobileMenu').classList.toggle('hidden');
+        });
+
+        // Simple hash "routing"
+        function showSection(id) {
+            const ids = ['home', 'projects', 'about', 'contact', 'not-found'];
+            ids.forEach(i => {
+                const el = document.getElementById(i);
+                if (!el) return;
+                const active = (i === id);
+                el.classList.toggle('active', active);
+                if (!active) el.classList.remove('active');
+            });
+            setActiveLink(id);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        function handleRoute() {
+            const hash = location.hash.replace('#', '') || 'home';
+            if (sections.includes(hash)) showSection(hash);
+            else showSection('not-found');
+            // close mobile menu after nav
+            $('#mobileMenu').classList.add('hidden');
+        }
+        window.addEventListener('hashchange', handleRoute);
+        handleRoute();
+
+        // CTA
+        $('#ctaViewWork').addEventListener('click', () => { location.hash = '#projects'; });
+
+        // Typing effect
+        let roles = Array.isArray(state.roles) ? state.roles : defaults.roles;
+        const typedEl = $('#typedRole');
+        let roleIdx = 0, charIdx = 0, deleting = false;
+        function typeLoop() {
+            const role = roles[roleIdx % roles.length];
+            if (!deleting) {
+                charIdx++;
+                typedEl.textContent = role.slice(0, charIdx);
+                if (charIdx === role.length) {
+                    deleting = true;
+                    setTimeout(typeLoop, 1000);
+                    return;
+                }
+            } else {
+                charIdx--;
+                typedEl.textContent = role.slice(0, charIdx);
+                if (charIdx === 0) {
+                    deleting = false;
+                    roleIdx++;
+                }
+            }
+            setTimeout(typeLoop, deleting ? 35 : 65);
+        }
+        typeLoop();
+
+        // Projects: Flip and filters
+        $$('.flip-toggle').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const wrap = e.currentTarget.closest('.flip');
+                wrap.classList.toggle('flipped');
+            });
+        });
+        $$('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const cat = btn.dataset.filter;
+                const cards = $$('.flip');
+                cards.forEach(c => {
+                    const cCat = c.dataset.category;
+                    const show = (cat === 'all') || (cat === 'UI' ? cCat === 'UI' : cCat === cat);
+                    c.parentElement.classList.toggle('hidden', !show);
+                });
+                // visual feedback on selected filter
+                $$('.filter-btn').forEach(b => b.classList.toggle('bg-white/10', b === btn));
+            });
+        });
+
+        // Timeline reveal when in view
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.remove('opacity-0', 'translate-y-4');
+                    entry.target.classList.add('animate-fadeUp');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.2 });
+        $$('.timeline-item').forEach(el => observer.observe(el));
+
+        // Progress bars animate on view
+        const progObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const bar = entry.target;
+                    const target = parseInt(bar.dataset.target || '0', 10);
+                    bar.style.width = '0%';
+                    let n = 0;
+                    const step = () => {
+                        n += 2;
+                        bar.style.width = Math.min(n, target) + '%';
+                        if (n < target) requestAnimationFrame(step);
+                    };
+                    requestAnimationFrame(step);
+                    progObserver.unobserve(bar);
+                }
+            });
+        }, { threshold: 0.4 });
+        $$('.progress').forEach(el => progObserver.observe(el));
+
+        // Live status toggle
+        const statusToggle = $('#statusToggle');
+        const liveStatusText = $('#liveStatusText');
+        function applyStatus() {
+            const available = storage.get('available', true);
+            statusToggle.checked = available;
+            liveStatusText.textContent = available ? 'I’m Available for Work ✅' : 'Currently Unavailable ⛔';
+        }
+        statusToggle.addEventListener('change', () => {
+            storage.set('available', statusToggle.checked);
+            applyStatus();
+            toast(statusToggle.checked ? 'Status set to Available' : 'Status set to Unavailable');
+        });
+        applyStatus();
+
+        // Contact: Demo sending
+        const modal = $('#modal');
+        const closeModal = () => modal.classList.add('hidden');
+        $('#closeModal').addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+        $('#contactForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.currentTarget);
+            const name = fd.get('name'); const email = fd.get('email'); const subject = fd.get('subject'); const message = fd.get('message');
+            const full = `From: ${name} <${email}>\nSubject: ${subject}\n\n${message}`;
+            storage.set('lastMessage', { name, email, subject, message });
+            // Prepare modal actions
+            $('#btnCopy').onclick = async () => {
+                try { await navigator.clipboard.writeText(full); toast('Message copied'); } catch { toast('Copy not supported'); }
+            };
+            $('#btnMailto').href = `mailto:${state.email || defaults.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(full)}`;
+            $('#btnWhatsAppModal').href = `https://wa.me/${state.whatsapp}?text=${encodeURIComponent(full)}`;
+            modal.classList.remove('hidden');
+        });
+
+        // Toast
+        function toast(text) {
+            $('#toastText').textContent = text;
+            const t = $('#toast');
+            t.classList.remove('opacity-0');
+            t.classList.add('opacity-100');
+            setTimeout(() => {
+                t.classList.remove('opacity-100');
+                t.classList.add('opacity-0');
+            }, 1600);
+        }
+
+        // Personalize panel
+        const panel = $('#settingsPanel');
+        const backdrop = $('#settingsBackdrop');
+        const openPanel = () => { panel.classList.remove('translate-x-full'); backdrop.classList.remove('hidden'); };
+        const closePanel = () => { panel.classList.add('translate-x-full'); backdrop.classList.add('hidden'); };
+        $('#openSettings').addEventListener('click', openPanel);
+        $('#closeSettings').addEventListener('click', closePanel);
+        backdrop.addEventListener('click', closePanel);
+
+        function fillSettingsForm() {
+            $('#inpName').value = state.name || '';
+            $('#inpRoles').value = (state.roles || []).join(', ');
+            $('#inpWhatsApp').value = state.whatsapp || '';
+            $('#inpEmail').value = state.email || '';
+            $('#inpGithub').value = state.github || '';
+            $('#inpLinkedin').value = state.linkedin || '';
+            $('#inpPhoto').value = state.photo || '';
+        }
+        $('#saveSettings').addEventListener('click', () => {
+            state.name = $('#inpName').value.trim() || defaults.name;
+            state.roles = $('#inpRoles').value.split(',').map(s => s.trim()).filter(Boolean);
+            state.whatsapp = $('#inpWhatsApp').value.trim() || defaults.whatsapp;
+            state.email = $('#inpEmail').value.trim() || defaults.email;
+            state.github = $('#inpGithub').value.trim() || defaults.github;
+            state.linkedin = $('#inpLinkedin').value.trim() || defaults.linkedin;
+            state.photo = $('#inpPhoto').value.trim();
+            storage.set('portfolioSettings', state);
+            applySettings();
+            toast('Saved!');
+            closePanel();
+        });
+
+        // Replace the flip card toggle with modal functionality
+        function showProjectModal(project) {
+            const modalContent = `
+        <div class="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm flex items-center justify-center">
+            <div class="bg-slate-900/95 border border-white/10 rounded-2xl p-6 max-w-3xl w-full mx-4 animate-fadeUp">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-2xl font-bold">${project.title}</h3>
+                    <button onclick="closeProjectModal()" class="p-2 rounded-lg hover:bg-white/5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor">
+                            <path d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="text-white/70">${project.description}</div>
+                <div class="mt-6 grid gap-4">
+                    <div>
+                        <h4 class="font-semibold mb-2">Technologies</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${project.tech.map(t => `<span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm">${t}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Key Features</h4>
+                        <ul class="list-disc pl-4 text-white/70 space-y-1">
+                            ${project.features.map(f => `<li>${f}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <a href="${project.github}" target="_blank" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20">View Code</a>
+                    <a href="${project.demo}" target="_blank" class="px-4 py-2 rounded-lg bg-gradient-to-r from-brand-500 to-violet-500 hover:shadow-glow">Live Demo</a>
+                </div>
+            </div>
+        </div>
+    `;
+            document.body.insertAdjacentHTML('beforeend', modalContent);
+        }
+    </script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'96b21a60e71684aa',t:'MTc1NDUyMDczMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+</body>
+
+</html>

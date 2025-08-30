@@ -1,0 +1,2501 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIXBOT - Smart Complaint Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .chat-bubble {
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-10px);
+            }
+
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chatbot {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+        }
+
+        .chat-window {
+            display: none;
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 998;
+        }
+
+        .chat-window.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+    </style>
+    <style>
+        *,
+        ::before,
+        ::after {
+            --tw-border-spacing-x: 0;
+            --tw-border-spacing-y: 0;
+            --tw-translate-x: 0;
+            --tw-translate-y: 0;
+            --tw-rotate: 0;
+            --tw-skew-x: 0;
+            --tw-skew-y: 0;
+            --tw-scale-x: 1;
+            --tw-scale-y: 1;
+            --tw-pan-x: ;
+            --tw-pan-y: ;
+            --tw-pinch-zoom: ;
+            --tw-scroll-snap-strictness: proximity;
+            --tw-gradient-from-position: ;
+            --tw-gradient-via-position: ;
+            --tw-gradient-to-position: ;
+            --tw-ordinal: ;
+            --tw-slashed-zero: ;
+            --tw-numeric-figure: ;
+            --tw-numeric-spacing: ;
+            --tw-numeric-fraction: ;
+            --tw-ring-inset: ;
+            --tw-ring-offset-width: 0px;
+            --tw-ring-offset-color: #fff;
+            --tw-ring-color: rgb(59 130 246 / 0.5);
+            --tw-ring-offset-shadow: 0 0 #0000;
+            --tw-ring-shadow: 0 0 #0000;
+            --tw-shadow: 0 0 #0000;
+            --tw-shadow-colored: 0 0 #0000;
+            --tw-blur: ;
+            --tw-brightness: ;
+            --tw-contrast: ;
+            --tw-grayscale: ;
+            --tw-hue-rotate: ;
+            --tw-invert: ;
+            --tw-saturate: ;
+            --tw-sepia: ;
+            --tw-drop-shadow: ;
+            --tw-backdrop-blur: ;
+            --tw-backdrop-brightness: ;
+            --tw-backdrop-contrast: ;
+            --tw-backdrop-grayscale: ;
+            --tw-backdrop-hue-rotate: ;
+            --tw-backdrop-invert: ;
+            --tw-backdrop-opacity: ;
+            --tw-backdrop-saturate: ;
+            --tw-backdrop-sepia: ;
+            --tw-contain-size: ;
+            --tw-contain-layout: ;
+            --tw-contain-paint: ;
+            --tw-contain-style:
+        }
+
+        ::backdrop {
+            --tw-border-spacing-x: 0;
+            --tw-border-spacing-y: 0;
+            --tw-translate-x: 0;
+            --tw-translate-y: 0;
+            --tw-rotate: 0;
+            --tw-skew-x: 0;
+            --tw-skew-y: 0;
+            --tw-scale-x: 1;
+            --tw-scale-y: 1;
+            --tw-pan-x: ;
+            --tw-pan-y: ;
+            --tw-pinch-zoom: ;
+            --tw-scroll-snap-strictness: proximity;
+            --tw-gradient-from-position: ;
+            --tw-gradient-via-position: ;
+            --tw-gradient-to-position: ;
+            --tw-ordinal: ;
+            --tw-slashed-zero: ;
+            --tw-numeric-figure: ;
+            --tw-numeric-spacing: ;
+            --tw-numeric-fraction: ;
+            --tw-ring-inset: ;
+            --tw-ring-offset-width: 0px;
+            --tw-ring-offset-color: #fff;
+            --tw-ring-color: rgb(59 130 246 / 0.5);
+            --tw-ring-offset-shadow: 0 0 #0000;
+            --tw-ring-shadow: 0 0 #0000;
+            --tw-shadow: 0 0 #0000;
+            --tw-shadow-colored: 0 0 #0000;
+            --tw-blur: ;
+            --tw-brightness: ;
+            --tw-contrast: ;
+            --tw-grayscale: ;
+            --tw-hue-rotate: ;
+            --tw-invert: ;
+            --tw-saturate: ;
+            --tw-sepia: ;
+            --tw-drop-shadow: ;
+            --tw-backdrop-blur: ;
+            --tw-backdrop-brightness: ;
+            --tw-backdrop-contrast: ;
+            --tw-backdrop-grayscale: ;
+            --tw-backdrop-hue-rotate: ;
+            --tw-backdrop-invert: ;
+            --tw-backdrop-opacity: ;
+            --tw-backdrop-saturate: ;
+            --tw-backdrop-sepia: ;
+            --tw-contain-size: ;
+            --tw-contain-layout: ;
+            --tw-contain-paint: ;
+            --tw-contain-style:
+        }
+
+        /* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */
+        *,
+        ::after,
+        ::before {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: #e5e7eb
+        }
+
+        ::after,
+        ::before {
+            --tw-content: ''
+        }
+
+        :host,
+        html {
+            line-height: 1.5;
+            -webkit-text-size-adjust: 100%;
+            -moz-tab-size: 4;
+            tab-size: 4;
+            font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            font-feature-settings: normal;
+            font-variation-settings: normal;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        body {
+            margin: 0;
+            line-height: inherit
+        }
+
+        hr {
+            height: 0;
+            color: inherit;
+            border-top-width: 1px
+        }
+
+        abbr:where([title]) {
+            -webkit-text-decoration: underline dotted;
+            text-decoration: underline dotted
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-size: inherit;
+            font-weight: inherit
+        }
+
+        a {
+            color: inherit;
+            text-decoration: inherit
+        }
+
+        b,
+        strong {
+            font-weight: bolder
+        }
+
+        code,
+        kbd,
+        pre,
+        samp {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-feature-settings: normal;
+            font-variation-settings: normal;
+            font-size: 1em
+        }
+
+        small {
+            font-size: 80%
+        }
+
+        sub,
+        sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative;
+            vertical-align: baseline
+        }
+
+        sub {
+            bottom: -.25em
+        }
+
+        sup {
+            top: -.5em
+        }
+
+        table {
+            text-indent: 0;
+            border-color: inherit;
+            border-collapse: collapse
+        }
+
+        button,
+        input,
+        optgroup,
+        select,
+        textarea {
+            font-family: inherit;
+            font-feature-settings: inherit;
+            font-variation-settings: inherit;
+            font-size: 100%;
+            font-weight: inherit;
+            line-height: inherit;
+            letter-spacing: inherit;
+            color: inherit;
+            margin: 0;
+            padding: 0
+        }
+
+        button,
+        select {
+            text-transform: none
+        }
+
+        button,
+        input:where([type=button]),
+        input:where([type=reset]),
+        input:where([type=submit]) {
+            -webkit-appearance: button;
+            background-color: transparent;
+            background-image: none
+        }
+
+        :-moz-focusring {
+            outline: auto
+        }
+
+        :-moz-ui-invalid {
+            box-shadow: none
+        }
+
+        progress {
+            vertical-align: baseline
+        }
+
+        ::-webkit-inner-spin-button,
+        ::-webkit-outer-spin-button {
+            height: auto
+        }
+
+        [type=search] {
+            -webkit-appearance: textfield;
+            outline-offset: -2px
+        }
+
+        ::-webkit-search-decoration {
+            -webkit-appearance: none
+        }
+
+        ::-webkit-file-upload-button {
+            -webkit-appearance: button;
+            font: inherit
+        }
+
+        summary {
+            display: list-item
+        }
+
+        blockquote,
+        dd,
+        dl,
+        figure,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        hr,
+        p,
+        pre {
+            margin: 0
+        }
+
+        fieldset {
+            margin: 0;
+            padding: 0
+        }
+
+        legend {
+            padding: 0
+        }
+
+        menu,
+        ol,
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0
+        }
+
+        dialog {
+            padding: 0
+        }
+
+        textarea {
+            resize: vertical
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            opacity: 1;
+            color: #9ca3af
+        }
+
+        [role=button],
+        button {
+            cursor: pointer
+        }
+
+        :disabled {
+            cursor: default
+        }
+
+        audio,
+        canvas,
+        embed,
+        iframe,
+        img,
+        object,
+        svg,
+        video {
+            display: block;
+            vertical-align: middle
+        }
+
+        img,
+        video {
+            max-width: 100%;
+            height: auto
+        }
+
+        [hidden]:where(:not([hidden=until-found])) {
+            display: none
+        }
+
+        .container {
+            width: 100%
+        }
+
+        @media (min-width: 640px) {
+            .container {
+                max-width: 640px
+            }
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                max-width: 768px
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 1024px
+            }
+        }
+
+        @media (min-width: 1280px) {
+            .container {
+                max-width: 1280px
+            }
+        }
+
+        @media (min-width: 1536px) {
+            .container {
+                max-width: 1536px
+            }
+        }
+
+        .sticky {
+            position: sticky
+        }
+
+        .top-0 {
+            top: 0px
+        }
+
+        .z-50 {
+            z-index: 50
+        }
+
+        .mx-4 {
+            margin-left: 1rem;
+            margin-right: 1rem
+        }
+
+        .mx-auto {
+            margin-left: auto;
+            margin-right: auto
+        }
+
+        .mb-12 {
+            margin-bottom: 3rem
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem
+        }
+
+        .mb-3 {
+            margin-bottom: 0.75rem
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem
+        }
+
+        .mb-6 {
+            margin-bottom: 1.5rem
+        }
+
+        .mb-8 {
+            margin-bottom: 2rem
+        }
+
+        .mr-1 {
+            margin-right: 0.25rem
+        }
+
+        .mr-2 {
+            margin-right: 0.5rem
+        }
+
+        .mt-1 {
+            margin-top: 0.25rem
+        }
+
+        .mt-2 {
+            margin-top: 0.5rem
+        }
+
+        .mt-4 {
+            margin-top: 1rem
+        }
+
+        .mt-8 {
+            margin-top: 2rem
+        }
+
+        .block {
+            display: block
+        }
+
+        .flex {
+            display: flex
+        }
+
+        .grid {
+            display: grid
+        }
+
+        .hidden {
+            display: none
+        }
+
+        .h-16 {
+            height: 4rem
+        }
+
+        .h-24 {
+            height: 6rem
+        }
+
+        .w-16 {
+            width: 4rem
+        }
+
+        .w-24 {
+            width: 6rem
+        }
+
+        .w-full {
+            width: 100%
+        }
+
+        .max-w-2xl {
+            max-width: 42rem
+        }
+
+        .max-w-4xl {
+            max-width: 56rem
+        }
+
+        .max-w-6xl {
+            max-width: 72rem
+        }
+
+        .max-w-md {
+            max-width: 28rem
+        }
+
+        .flex-1 {
+            flex: 1 1 0%
+        }
+
+        .flex-col {
+            flex-direction: column
+        }
+
+        .items-start {
+            align-items: flex-start
+        }
+
+        .items-center {
+            align-items: center
+        }
+
+        .justify-end {
+            justify-content: flex-end
+        }
+
+        .justify-center {
+            justify-content: center
+        }
+
+        .justify-between {
+            justify-content: space-between
+        }
+
+        .gap-4 {
+            gap: 1rem
+        }
+
+        .gap-6 {
+            gap: 1.5rem
+        }
+
+        .gap-8 {
+            gap: 2rem
+        }
+
+        .space-x-2> :not([hidden])~ :not([hidden]) {
+            --tw-space-x-reverse: 0;
+            margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+            margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))
+        }
+
+        .space-x-3> :not([hidden])~ :not([hidden]) {
+            --tw-space-x-reverse: 0;
+            margin-right: calc(0.75rem * var(--tw-space-x-reverse));
+            margin-left: calc(0.75rem * calc(1 - var(--tw-space-x-reverse)))
+        }
+
+        .space-x-4> :not([hidden])~ :not([hidden]) {
+            --tw-space-x-reverse: 0;
+            margin-right: calc(1rem * var(--tw-space-x-reverse));
+            margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)))
+        }
+
+        .space-x-6> :not([hidden])~ :not([hidden]) {
+            --tw-space-x-reverse: 0;
+            margin-right: calc(1.5rem * var(--tw-space-x-reverse));
+            margin-left: calc(1.5rem * calc(1 - var(--tw-space-x-reverse)))
+        }
+
+        .space-y-1> :not([hidden])~ :not([hidden]) {
+            --tw-space-y-reverse: 0;
+            margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));
+            margin-bottom: calc(0.25rem * var(--tw-space-y-reverse))
+        }
+
+        .space-y-2> :not([hidden])~ :not([hidden]) {
+            --tw-space-y-reverse: 0;
+            margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
+            margin-bottom: calc(0.5rem * var(--tw-space-y-reverse))
+        }
+
+        .space-y-3> :not([hidden])~ :not([hidden]) {
+            --tw-space-y-reverse: 0;
+            margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
+            margin-bottom: calc(0.75rem * var(--tw-space-y-reverse))
+        }
+
+        .space-y-4> :not([hidden])~ :not([hidden]) {
+            --tw-space-y-reverse: 0;
+            margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
+            margin-bottom: calc(1rem * var(--tw-space-y-reverse))
+        }
+
+        .space-y-6> :not([hidden])~ :not([hidden]) {
+            --tw-space-y-reverse: 0;
+            margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));
+            margin-bottom: calc(1.5rem * var(--tw-space-y-reverse))
+        }
+
+        .overflow-y-auto {
+            overflow-y: auto
+        }
+
+        .rounded-full {
+            border-radius: 9999px
+        }
+
+        .rounded-lg {
+            border-radius: 0.5rem
+        }
+
+        .rounded-t-lg {
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem
+        }
+
+        .border {
+            border-width: 1px
+        }
+
+        .border-2 {
+            border-width: 2px
+        }
+
+        .border-t {
+            border-top-width: 1px
+        }
+
+        .border-gray-200 {
+            --tw-border-opacity: 1;
+            border-color: rgb(229 231 235 / var(--tw-border-opacity, 1))
+        }
+
+        .border-gray-300 {
+            --tw-border-opacity: 1;
+            border-color: rgb(209 213 219 / var(--tw-border-opacity, 1))
+        }
+
+        .border-gray-700 {
+            --tw-border-opacity: 1;
+            border-color: rgb(55 65 81 / var(--tw-border-opacity, 1))
+        }
+
+        .border-white {
+            --tw-border-opacity: 1;
+            border-color: rgb(255 255 255 / var(--tw-border-opacity, 1))
+        }
+
+        .bg-gray-50 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-blue-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-blue-600 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(37 99 235 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-gray-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-gray-800 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(31 41 55 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-green-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-green-500 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-purple-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 232 255 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-purple-600 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(147 51 234 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-white {
+            --tw-bg-opacity: 1;
+            background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-orange-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(255 237 213 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-yellow-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(254 249 195 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-gradient-to-r {
+            background-image: linear-gradient(to right, var(--tw-gradient-stops))
+        }
+
+        .from-blue-500 {
+            --tw-gradient-from: #3b82f6 var(--tw-gradient-from-position);
+            --tw-gradient-to: rgb(59 130 246 / 0) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+        }
+
+        .from-blue-600 {
+            --tw-gradient-from: #2563eb var(--tw-gradient-from-position);
+            --tw-gradient-to: rgb(37 99 235 / 0) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+        }
+
+        .from-green-500 {
+            --tw-gradient-from: #22c55e var(--tw-gradient-from-position);
+            --tw-gradient-to: rgb(34 197 94 / 0) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+        }
+
+        .from-purple-500 {
+            --tw-gradient-from: #a855f7 var(--tw-gradient-from-position);
+            --tw-gradient-to: rgb(168 85 247 / 0) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+        }
+
+        .to-blue-600 {
+            --tw-gradient-to: #2563eb var(--tw-gradient-to-position)
+        }
+
+        .to-pink-600 {
+            --tw-gradient-to: #db2777 var(--tw-gradient-to-position)
+        }
+
+        .to-purple-600 {
+            --tw-gradient-to: #9333ea var(--tw-gradient-to-position)
+        }
+
+        .p-2 {
+            padding: 0.5rem
+        }
+
+        .p-3 {
+            padding: 0.75rem
+        }
+
+        .p-4 {
+            padding: 1rem
+        }
+
+        .p-6 {
+            padding: 1.5rem
+        }
+
+        .p-8 {
+            padding: 2rem
+        }
+
+        .px-3 {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem
+        }
+
+        .px-4 {
+            padding-left: 1rem;
+            padding-right: 1rem
+        }
+
+        .px-6 {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem
+        }
+
+        .px-8 {
+            padding-left: 2rem;
+            padding-right: 2rem
+        }
+
+        .py-12 {
+            padding-top: 3rem;
+            padding-bottom: 3rem
+        }
+
+        .py-16 {
+            padding-top: 4rem;
+            padding-bottom: 4rem
+        }
+
+        .py-2 {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem
+        }
+
+        .py-20 {
+            padding-top: 5rem;
+            padding-bottom: 5rem
+        }
+
+        .py-3 {
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem
+        }
+
+        .py-4 {
+            padding-top: 1rem;
+            padding-bottom: 1rem
+        }
+
+        .py-8 {
+            padding-top: 2rem;
+            padding-bottom: 2rem
+        }
+
+        .py-1 {
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem
+        }
+
+        .pb-4 {
+            padding-bottom: 1rem
+        }
+
+        .pt-8 {
+            padding-top: 2rem
+        }
+
+        .pt-4 {
+            padding-top: 1rem
+        }
+
+        .text-center {
+            text-align: center
+        }
+
+        .text-2xl {
+            font-size: 1.5rem;
+            line-height: 2rem
+        }
+
+        .text-3xl {
+            font-size: 1.875rem;
+            line-height: 2.25rem
+        }
+
+        .text-5xl {
+            font-size: 3rem;
+            line-height: 1
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+            line-height: 1.25rem
+        }
+
+        .text-xl {
+            font-size: 1.25rem;
+            line-height: 1.75rem
+        }
+
+        .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem
+        }
+
+        .text-xs {
+            font-size: 0.75rem;
+            line-height: 1rem
+        }
+
+        .font-bold {
+            font-weight: 700
+        }
+
+        .font-medium {
+            font-weight: 500
+        }
+
+        .font-semibold {
+            font-weight: 600
+        }
+
+        .text-blue-600 {
+            --tw-text-opacity: 1;
+            color: rgb(37 99 235 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-400 {
+            --tw-text-opacity: 1;
+            color: rgb(156 163 175 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-500 {
+            --tw-text-opacity: 1;
+            color: rgb(107 114 128 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-600 {
+            --tw-text-opacity: 1;
+            color: rgb(75 85 99 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-700 {
+            --tw-text-opacity: 1;
+            color: rgb(55 65 81 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-800 {
+            --tw-text-opacity: 1;
+            color: rgb(31 41 55 / var(--tw-text-opacity, 1))
+        }
+
+        .text-green-600 {
+            --tw-text-opacity: 1;
+            color: rgb(22 163 74 / var(--tw-text-opacity, 1))
+        }
+
+        .text-purple-600 {
+            --tw-text-opacity: 1;
+            color: rgb(147 51 234 / var(--tw-text-opacity, 1))
+        }
+
+        .text-red-600 {
+            --tw-text-opacity: 1;
+            color: rgb(220 38 38 / var(--tw-text-opacity, 1))
+        }
+
+        .text-white {
+            --tw-text-opacity: 1;
+            color: rgb(255 255 255 / var(--tw-text-opacity, 1))
+        }
+
+        .text-blue-800 {
+            --tw-text-opacity: 1;
+            color: rgb(30 64 175 / var(--tw-text-opacity, 1))
+        }
+
+        .text-green-800 {
+            --tw-text-opacity: 1;
+            color: rgb(22 101 52 / var(--tw-text-opacity, 1))
+        }
+
+        .text-orange-800 {
+            --tw-text-opacity: 1;
+            color: rgb(154 52 18 / var(--tw-text-opacity, 1))
+        }
+
+        .text-yellow-800 {
+            --tw-text-opacity: 1;
+            color: rgb(133 77 14 / var(--tw-text-opacity, 1))
+        }
+
+        .shadow-lg {
+            --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+            box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+        }
+
+        .shadow-md {
+            --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+            box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+        }
+
+        .shadow-sm {
+            --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
+            box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+        }
+
+        .transition {
+            transition-property: color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms
+        }
+
+        .hover\:bg-blue-700:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(29 78 216 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-gray-100:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-gray-50:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-purple-700:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(126 34 206 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-white:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:text-blue-600:hover {
+            --tw-text-opacity: 1;
+            color: rgb(37 99 235 / var(--tw-text-opacity, 1))
+        }
+
+        .hover\:text-blue-800:hover {
+            --tw-text-opacity: 1;
+            color: rgb(30 64 175 / var(--tw-text-opacity, 1))
+        }
+
+        .hover\:text-gray-200:hover {
+            --tw-text-opacity: 1;
+            color: rgb(229 231 235 / var(--tw-text-opacity, 1))
+        }
+
+        .hover\:text-gray-700:hover {
+            --tw-text-opacity: 1;
+            color: rgb(55 65 81 / var(--tw-text-opacity, 1))
+        }
+
+        .hover\:text-white:hover {
+            --tw-text-opacity: 1;
+            color: rgb(255 255 255 / var(--tw-text-opacity, 1))
+        }
+
+        .hover\:text-green-800:hover {
+            --tw-text-opacity: 1;
+            color: rgb(22 101 52 / var(--tw-text-opacity, 1))
+        }
+
+        .hover\:shadow-lg:hover {
+            --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+            box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+        }
+
+        .hover\:shadow-xl:hover {
+            --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);
+            box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+        }
+
+        .focus\:border-transparent:focus {
+            border-color: transparent
+        }
+
+        .focus\:ring-2:focus {
+            --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+            --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+            box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)
+        }
+
+        .focus\:ring-blue-500:focus {
+            --tw-ring-opacity: 1;
+            --tw-ring-color: rgb(59 130 246 / var(--tw-ring-opacity, 1))
+        }
+
+        @media (min-width: 640px) {
+            .sm\:flex-row {
+                flex-direction: row
+            }
+        }
+
+        @media (min-width: 768px) {
+            .md\:col-span-2 {
+                grid-column: span 2 / span 2
+            }
+
+            .md\:mt-0 {
+                margin-top: 0px
+            }
+
+            .md\:flex {
+                display: flex
+            }
+
+            .md\:hidden {
+                display: none
+            }
+
+            .md\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+
+            .md\:grid-cols-3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr))
+            }
+
+            .md\:grid-cols-4 {
+                grid-template-columns: repeat(4, minmax(0, 1fr))
+            }
+
+            .md\:flex-row {
+                flex-direction: row
+            }
+
+            .md\:items-center {
+                align-items: center
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Notification System -->
+    <div id="notification" class="notification bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+        <span id="notificationText"></span>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
+                        <i class="fas fa-robot text-white text-2xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-800">FIXBOT</h1>
+                </div>
+
+                <!-- Language Selector -->
+                <div class="flex items-center space-x-4">
+                    <select id="languageSelector"
+                        class="bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 text-sm" fdprocessedid="sw71vbm">
+                        <option value="en">English</option>
+                        <option value="hi">हिंदी</option>
+                        <option value="gu">ગુજરાતી</option>
+                    </select>
+
+                    <!-- Navigation Menu -->
+                    <div class="hidden md:flex items-center space-x-6">
+                        <a href="#" onclick="showPage('home')"
+                            class="text-gray-700 hover:text-blue-600 transition">Home</a>
+                        <a href="#" onclick="showPage('complaint')"
+                            class="text-gray-700 hover:text-blue-600 transition">File Complaint</a>
+                        <a href="#" onclick="showPage('history')"
+                            class="text-gray-700 hover:text-blue-600 transition">My Complaints</a>
+                        <a href="#" onclick="showPage('about')"
+                            class="text-gray-700 hover:text-blue-600 transition">About</a>
+                        <a href="#" onclick="showPage('team')"
+                            class="text-gray-700 hover:text-blue-600 transition">Team</a>
+                        <a href="#" onclick="showPage('contact')"
+                            class="text-gray-700 hover:text-blue-600 transition">Contact</a>
+                    </div>
+
+                    <!-- User Actions -->
+                    <div id="userActions" class="flex items-center space-x-3">
+                        <button onclick="showModal('loginModal')"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                            fdprocessedid="7djo0a">Login</button>
+                        <button onclick="showModal('signupModal')"
+                            class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition"
+                            fdprocessedid="sbo9m">Sign Up</button>
+                    </div>
+
+                    <!-- Mobile Menu Button -->
+                    <button id="mobileMenuBtn" class="md:hidden text-gray-700">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="md:hidden mt-4 pb-4 border-t border-gray-200 hidden">
+                <div class="flex flex-col space-y-3 mt-4">
+                    <a href="#" onclick="showPage('home')" class="text-gray-700 hover:text-blue-600 transition">Home</a>
+                    <a href="#" onclick="showPage('complaint')"
+                        class="text-gray-700 hover:text-blue-600 transition">File Complaint</a>
+                    <a href="#" onclick="showPage('history')" class="text-gray-700 hover:text-blue-600 transition">My
+                        Complaints</a>
+                    <a href="#" onclick="showPage('about')"
+                        class="text-gray-700 hover:text-blue-600 transition">About</a>
+                    <a href="#" onclick="showPage('team')" class="text-gray-700 hover:text-blue-600 transition">Team</a>
+                    <a href="#" onclick="showPage('contact')"
+                        class="text-gray-700 hover:text-blue-600 transition">Contact</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Home Page -->
+        <div id="homePage" class="page">
+            <!-- Hero Section -->
+            <section class="hero-gradient text-white py-20">
+                <div class="container mx-auto px-4 text-center">
+                    <h1 class="text-5xl font-bold mb-6" data-translate="hero_title">Smart Complaint Management with AI
+                    </h1>
+                    <p class="text-xl mb-8 max-w-2xl mx-auto" data-translate="hero_subtitle">File complaints across
+                        multiple sectors with AI-powered assistance and real-time tracking</p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button onclick="showPage('complaint')"
+                            class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition"
+                            fdprocessedid="ykg6g">
+                            <i class="fas fa-plus mr-2"></i><span data-translate="file_complaint">File Complaint</span>
+                        </button>
+                        <button onclick="showPage('history')"
+                            class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition"
+                            fdprocessedid="k6f9k">
+                            <i class="fas fa-history mr-2"></i><span data-translate="track_complaints">Track
+                                Complaints</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features Section -->
+            <section class="py-16 bg-white">
+                <div class="container mx-auto px-4">
+                    <h2 class="text-3xl font-bold text-center mb-12" data-translate="features_title">Why Choose FIXBOT?
+                    </h2>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="text-center p-6 rounded-lg border border-gray-200 hover:shadow-lg transition">
+                            <div
+                                class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-robot text-blue-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-3" data-translate="ai_assistance">AI Assistance</h3>
+                            <p class="text-gray-600" data-translate="ai_description">Get intelligent suggestions and
+                                guidance while filing complaints</p>
+                        </div>
+                        <div class="text-center p-6 rounded-lg border border-gray-200 hover:shadow-lg transition">
+                            <div
+                                class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-clock text-green-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-3" data-translate="real_time">Real-time Tracking</h3>
+                            <p class="text-gray-600" data-translate="tracking_description">Monitor your complaint status
+                                with live updates</p>
+                        </div>
+                        <div class="text-center p-6 rounded-lg border border-gray-200 hover:shadow-lg transition">
+                            <div
+                                class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-language text-purple-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-3" data-translate="multilingual">Multilingual Support
+                            </h3>
+                            <p class="text-gray-600" data-translate="language_description">Available in English, Hindi,
+                                and Gujarati</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sectors Section -->
+            <section class="py-16 bg-gray-50">
+                <div class="container mx-auto px-4">
+                    <h2 class="text-3xl font-bold text-center mb-12" data-translate="sectors_title">Complaint Sectors
+                    </h2>
+                    <div class="grid md:grid-cols-4 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-lg transition">
+                            <i class="fas fa-graduation-cap text-blue-600 text-3xl mb-4"></i>
+                            <h3 class="font-semibold" data-translate="college">College</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-lg transition">
+                            <i class="fas fa-shield-alt text-red-600 text-3xl mb-4"></i>
+                            <h3 class="font-semibold" data-translate="police">Police</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-lg transition">
+                            <i class="fas fa-city text-green-600 text-3xl mb-4"></i>
+                            <h3 class="font-semibold" data-translate="municipal">Municipal Corporation</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-lg transition">
+                            <i class="fas fa-hospital text-purple-600 text-3xl mb-4"></i>
+                            <h3 class="font-semibold" data-translate="healthcare">Healthcare</h3>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Complaint Form Page -->
+        <div id="complaintPage" class="page hidden">
+            <div class="container mx-auto px-4 py-8">
+                <div class="max-w-4xl mx-auto">
+                    <h1 class="text-3xl font-bold mb-8 text-center" data-translate="file_new_complaint">File New
+                        Complaint</h1>
+
+                    <form id="complaintForm" class="bg-white rounded-lg shadow-lg p-8">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2"
+                                    data-translate="full_name">Full Name *</label>
+                                <input type="text" id="complainantName" required=""
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="email">Email
+                                    *</label>
+                                <input type="email" id="complainantEmail" required=""
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="phone">Phone
+                                    Number *</label>
+                                <input type="tel" id="complainantPhone" required=""
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2"
+                                    data-translate="sector">Sector *</label>
+                                <select id="complaintSector" required=""
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">Select Sector</option>
+                                    <option value="college">College</option>
+                                    <option value="police">Police</option>
+                                    <option value="municipal">Municipal Corporation</option>
+                                    <option value="healthcare">Healthcare</option>
+                                    <option value="transport">Transport</option>
+                                    <option value="electricity">Electricity</option>
+                                    <option value="water">Water Supply</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2"
+                                    data-translate="location">Location *</label>
+                                <input type="text" id="complaintLocation" required=""
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="Enter your location">
+                                <button type="button" onclick="getCurrentLocation()"
+                                    class="mt-2 text-blue-600 hover:text-blue-800 text-sm">
+                                    <i class="fas fa-map-marker-alt mr-1"></i><span
+                                        data-translate="use_current_location">Use Current Location</span>
+                                </button>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2"
+                                    data-translate="complaint_title">Complaint Title *</label>
+                                <input type="text" id="complaintTitle" required=""
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2"
+                                    data-translate="description">Description *</label>
+                                <textarea id="complaintDescription" required="" rows="4"
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2"
+                                    data-translate="attach_photos">Attach Photos (Optional)</label>
+                                <input type="file" id="complaintPhotos" multiple="" accept="image/*"
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <p class="text-sm text-gray-500 mt-1" data-translate="photo_limit">Maximum 5 photos, 5MB
+                                    each</p>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2"
+                                    data-translate="priority">Priority Level</label>
+                                <select id="complaintPriority"
+                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected="">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 flex justify-center">
+                            <button type="submit"
+                                class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                                <i class="fas fa-paper-plane mr-2"></i><span data-translate="submit_complaint">Submit
+                                    Complaint</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complaint History Page -->
+        <div id="historyPage" class="page hidden">
+            <div class="container mx-auto px-4 py-8">
+                <h1 class="text-3xl font-bold mb-8 text-center" data-translate="complaint_history">Complaint History
+                </h1>
+
+                <div class="max-w-6xl mx-auto">
+                    <!-- Filter Options -->
+                    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                        <div class="grid md:grid-cols-4 gap-4">
+                            <select id="statusFilter" class="border border-gray-300 rounded-lg px-4 py-2">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                            <select id="sectorFilter" class="border border-gray-300 rounded-lg px-4 py-2">
+                                <option value="">All Sectors</option>
+                                <option value="college">College</option>
+                                <option value="police">Police</option>
+                                <option value="municipal">Municipal</option>
+                                <option value="healthcare">Healthcare</option>
+                            </select>
+                            <input type="date" id="dateFilter" class="border border-gray-300 rounded-lg px-4 py-2">
+                            <button onclick="filterComplaints()"
+                                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                                <i class="fas fa-filter mr-2"></i>Filter
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Complaints List -->
+                    <div id="complaintsList" class="space-y-4">
+                        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">Street Light Not Working</h3>
+                                    <p class="text-sm text-gray-600">ID: FXB1001</p>
+                                </div>
+                                <div class="flex items-center space-x-3 mt-2 md:mt-0">
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        In-progress
+                                    </span>
+                                    <span
+                                        class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        Medium
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+                                <div>
+                                    <p><i class="fas fa-building mr-2"></i><strong>Sector:</strong> municipal</p>
+                                    <p><i class="fas fa-map-marker-alt mr-2"></i><strong>Location:</strong> Ahmedabad,
+                                        Gujarat</p>
+                                </div>
+                                <div>
+                                    <p><i class="fas fa-calendar mr-2"></i><strong>Submitted:</strong> 7/31/2025</p>
+                                    <p><i class="fas fa-user mr-2"></i><strong>Contact:</strong> +91 98765 43210</p>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <p class="text-gray-700">The street light on MG Road has been non-functional for the
+                                    past week.</p>
+                            </div>
+                            <div class="mt-4 flex justify-end space-x-2">
+                                <button onclick="openWhatsApp('municipal')"
+                                    class="text-green-600 hover:text-green-800 text-sm">
+                                    <i class="fab fa-whatsapp mr-1"></i>Contact Support
+                                </button>
+                                <button onclick="viewComplaintDetails('FXB1001')"
+                                    class="text-blue-600 hover:text-blue-800 text-sm">
+                                    <i class="fas fa-eye mr-1"></i>View Details
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">Library AC Not Working</h3>
+                                    <p class="text-sm text-gray-600">ID: FXB1002</p>
+                                </div>
+                                <div class="flex items-center space-x-3 mt-2 md:mt-0">
+                                    <span
+                                        class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Resolved
+                                    </span>
+                                    <span
+                                        class="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                        High
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+                                <div>
+                                    <p><i class="fas fa-building mr-2"></i><strong>Sector:</strong> college</p>
+                                    <p><i class="fas fa-map-marker-alt mr-2"></i><strong>Location:</strong> Gandhinagar,
+                                        Gujarat</p>
+                                </div>
+                                <div>
+                                    <p><i class="fas fa-calendar mr-2"></i><strong>Submitted:</strong> 7/27/2025</p>
+                                    <p><i class="fas fa-user mr-2"></i><strong>Contact:</strong> +91 87654 32109</p>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <p class="text-gray-700">The air conditioning system in the main library has been
+                                    malfunctioning.</p>
+                            </div>
+                            <div class="mt-4 flex justify-end space-x-2">
+                                <button onclick="openWhatsApp('college')"
+                                    class="text-green-600 hover:text-green-800 text-sm">
+                                    <i class="fab fa-whatsapp mr-1"></i>Contact Support
+                                </button>
+                                <button onclick="viewComplaintDetails('FXB1002')"
+                                    class="text-blue-600 hover:text-blue-800 text-sm">
+                                    <i class="fas fa-eye mr-1"></i>View Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Page -->
+        <div id="aboutPage" class="page hidden">
+            <div class="container mx-auto px-4 py-8">
+                <div class="max-w-4xl mx-auto">
+                    <h1 class="text-3xl font-bold mb-8 text-center" data-translate="about_us">About FIXBOT</h1>
+
+                    <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+                        <h2 class="text-2xl font-semibold mb-4" data-translate="our_mission">Our Mission</h2>
+                        <p class="text-gray-700 mb-6" data-translate="mission_text">FIXBOT is revolutionizing complaint
+                            management by providing an AI-powered platform that connects citizens with relevant
+                            authorities across multiple sectors. Our mission is to make complaint filing and resolution
+                            more efficient, transparent, and accessible to everyone.</p>
+
+                        <h2 class="text-2xl font-semibold mb-4" data-translate="key_features">Key Features</h2>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-green-600 mt-1"></i>
+                                <div>
+                                    <h3 class="font-semibold" data-translate="ai_powered">AI-Powered Assistance</h3>
+                                    <p class="text-gray-600 text-sm" data-translate="ai_feature_desc">Smart chatbot
+                                        provides guidance and suggestions</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-green-600 mt-1"></i>
+                                <div>
+                                    <h3 class="font-semibold" data-translate="multi_sector">Multi-Sector Support</h3>
+                                    <p class="text-gray-600 text-sm" data-translate="sector_feature_desc">File
+                                        complaints across various government sectors</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-green-600 mt-1"></i>
+                                <div>
+                                    <h3 class="font-semibold" data-translate="real_time_tracking">Real-time Tracking
+                                    </h3>
+                                    <p class="text-gray-600 text-sm" data-translate="tracking_feature_desc">Monitor
+                                        complaint status with live updates</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <i class="fas fa-check-circle text-green-600 mt-1"></i>
+                                <div>
+                                    <h3 class="font-semibold" data-translate="location_based">Location-based Services
+                                    </h3>
+                                    <p class="text-gray-600 text-sm" data-translate="location_feature_desc">Automatic
+                                        routing to relevant local authorities</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Page -->
+        <div id="teamPage" class="page hidden">
+            <div class="container mx-auto px-4 py-8">
+                <h1 class="text-3xl font-bold mb-8 text-center" data-translate="our_team">Our Team</h1>
+
+                <div class="max-w-6xl mx-auto">
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                            <div
+                                class="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                <i class="fas fa-user text-white text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Rajesh Kumar</h3>
+                            <p class="text-gray-600 mb-3">CEO &amp; Founder</p>
+                            <p class="text-sm text-gray-500">Leading the vision for transparent governance</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                            <div
+                                class="w-24 h-24 bg-gradient-to-r from-green-500 to-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                <i class="fas fa-user text-white text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Priya Sharma</h3>
+                            <p class="text-gray-600 mb-3">CTO</p>
+                            <p class="text-sm text-gray-500">Building cutting-edge AI solutions</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                            <div
+                                class="w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                <i class="fas fa-user text-white text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Amit Patel</h3>
+                            <p class="text-gray-600 mb-3">Head of Operations</p>
+                            <p class="text-sm text-gray-500">Ensuring smooth complaint resolution</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Page -->
+        <div id="contactPage" class="page hidden">
+            <div class="container mx-auto px-4 py-8">
+                <h1 class="text-3xl font-bold mb-8 text-center" data-translate="contact_us">Contact Us</h1>
+
+                <div class="max-w-4xl mx-auto">
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- Contact Form -->
+                        <div class="bg-white rounded-lg shadow-lg p-8">
+                            <h2 class="text-2xl font-semibold mb-6" data-translate="get_in_touch">Get in Touch</h2>
+                            <form id="contactForm">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                                        data-translate="name">Name</label>
+                                    <input type="text" required=""
+                                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                                        data-translate="email">Email</label>
+                                    <input type="email" required=""
+                                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                                        data-translate="message">Message</label>
+                                    <textarea required="" rows="4"
+                                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500"></textarea>
+                                </div>
+                                <button type="submit"
+                                    class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+                                    <span data-translate="send_message">Send Message</span>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Contact Information & Sector WhatsApp -->
+                        <div class="space-y-6">
+                            <div class="bg-white rounded-lg shadow-lg p-8">
+                                <h2 class="text-2xl font-semibold mb-6" data-translate="contact_info">Contact
+                                    Information</h2>
+                                <div class="space-y-4">
+                                    <div class="flex items-center space-x-3">
+                                        <i class="fas fa-envelope text-blue-600"></i>
+                                        <span>support@fixbot.com</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <i class="fas fa-phone text-blue-600"></i>
+                                        <span>+91 98765 43210</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <i class="fas fa-map-marker-alt text-blue-600"></i>
+                                        <span>123 Tech Park, Ahmedabad, Gujarat</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-lg shadow-lg p-8">
+                                <h2 class="text-2xl font-semibold mb-6" data-translate="sector_whatsapp">Sector WhatsApp
+                                    Support</h2>
+                                <div class="space-y-3">
+                                    <button onclick="openWhatsApp('college')"
+                                        class="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                                        <span><i class="fas fa-graduation-cap mr-2 text-blue-600"></i>College
+                                            Issues</span>
+                                        <i class="fab fa-whatsapp text-green-600 text-xl"></i>
+                                    </button>
+                                    <button onclick="openWhatsApp('police')"
+                                        class="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                                        <span><i class="fas fa-shield-alt mr-2 text-red-600"></i>Police
+                                            Complaints</span>
+                                        <i class="fab fa-whatsapp text-green-600 text-xl"></i>
+                                    </button>
+                                    <button onclick="openWhatsApp('municipal')"
+                                        class="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                                        <span><i class="fas fa-city mr-2 text-green-600"></i>Municipal Issues</span>
+                                        <i class="fab fa-whatsapp text-green-600 text-xl"></i>
+                                    </button>
+                                    <button onclick="openWhatsApp('healthcare')"
+                                        class="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                                        <span><i class="fas fa-hospital mr-2 text-purple-600"></i>Healthcare</span>
+                                        <i class="fab fa-whatsapp text-green-600 text-xl"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
+                            <i class="fas fa-robot text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">FIXBOT</h3>
+                    </div>
+                    <p class="text-gray-400" data-translate="footer_desc">Smart complaint management for a better
+                        tomorrow</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4" data-translate="quick_links">Quick Links</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" onclick="showPage('home')" class="hover:text-white transition">Home</a></li>
+                        <li><a href="#" onclick="showPage('complaint')" class="hover:text-white transition">File
+                                Complaint</a></li>
+                        <li><a href="#" onclick="showPage('history')" class="hover:text-white transition">Track
+                                Complaints</a></li>
+                        <li><a href="#" onclick="showPage('about')" class="hover:text-white transition">About Us</a>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4" data-translate="sectors">Sectors</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li>College</li>
+                        <li>Police</li>
+                        <li>Municipal Corporation</li>
+                        <li>Healthcare</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4" data-translate="connect">Connect With Us</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i
+                                class="fab fa-facebook text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i
+                                class="fab fa-twitter text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i
+                                class="fab fa-instagram text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i
+                                class="fab fa-linkedin text-xl"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>© 2024 FIXBOT. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold" data-translate="login">Login</h2>
+                <button onclick="closeModal('loginModal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="loginForm">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="email">Email</label>
+                    <input type="email" required=""
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                        data-translate="password">Password</label>
+                    <input type="password" required=""
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit"
+                    class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+                    <span data-translate="login">Login</span>
+                </button>
+            </form>
+            <p class="text-center mt-4 text-gray-600">
+                <span data-translate="no_account">Don't have an account?</span>
+                <button onclick="closeModal('loginModal'); showModal('signupModal')"
+                    class="text-blue-600 hover:text-blue-800">
+                    <span data-translate="sign_up">Sign Up</span>
+                </button>
+            </p>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="modal">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold" data-translate="sign_up">Sign Up</h2>
+                <button onclick="closeModal('signupModal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="signupForm">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="full_name">Full
+                        Name</label>
+                    <input type="text" required=""
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="email">Email</label>
+                    <input type="email" required=""
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2" data-translate="phone">Phone</label>
+                    <input type="tel" required=""
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                        data-translate="password">Password</label>
+                    <input type="password" required=""
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit"
+                    class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
+                    <span data-translate="create_account">Create Account</span>
+                </button>
+            </form>
+            <p class="text-center mt-4 text-gray-600">
+                <span data-translate="have_account">Already have an account?</span>
+                <button onclick="closeModal('signupModal'); showModal('loginModal')"
+                    class="text-blue-600 hover:text-blue-800">
+                    <span data-translate="login">Login</span>
+                </button>
+            </p>
+        </div>
+    </div>
+
+    <!-- AI Chatbot -->
+    <div class="chatbot">
+        <button id="chatbotToggle"
+            class="bg-gradient-to-r from-blue-600 to-purple-600 text-white w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition chat-bubble"
+            fdprocessedid="jda42r">
+            <i class="fas fa-robot text-2xl"></i>
+        </button>
+    </div>
+
+    <!-- Chat Window -->
+    <div id="chatWindow" class="chat-window">
+        <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-lg">
+            <div class="flex justify-between items-center">
+                <h3 class="font-semibold">FIXBOT Assistant</h3>
+                <button id="closeChatBtn" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div id="chatMessages" class="flex-1 p-4 overflow-y-auto bg-gray-50" style="height: 350px;">
+            <div class="bg-white p-3 rounded-lg mb-3 shadow-sm">
+                <p class="text-sm">👋 Hi! I'm FIXBOT Assistant. I can help you with:</p>
+                <ul class="text-sm mt-2 space-y-1">
+                    <li>• Filing complaints</li>
+                    <li>• Choosing the right sector</li>
+                    <li>• Tracking your complaints</li>
+                    <li>• General guidance</li>
+                </ul>
+                <p class="text-sm mt-2">How can I assist you today?</p>
+            </div>
+        </div>
+        <div class="p-4 border-t">
+            <div class="flex space-x-2">
+                <input type="text" id="chatInput" placeholder="Type your message..."
+                    class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                <button id="sendChatBtn"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentUser = null;
+        let complaints = JSON.parse(localStorage.getItem('complaints')) || [];
+        let currentLanguage = 'en';
+
+        // Language translations
+        const translations = {
+            en: {
+                hero_title: "Smart Complaint Management with AI",
+                hero_subtitle: "File complaints across multiple sectors with AI-powered assistance and real-time tracking",
+                file_complaint: "File Complaint",
+                track_complaints: "Track Complaints",
+                features_title: "Why Choose FIXBOT?",
+                ai_assistance: "AI Assistance",
+                ai_description: "Get intelligent suggestions and guidance while filing complaints",
+                real_time: "Real-time Tracking",
+                tracking_description: "Monitor your complaint status with live updates",
+                multilingual: "Multilingual Support",
+                language_description: "Available in English, Hindi, and Gujarati",
+                sectors_title: "Complaint Sectors",
+                college: "College",
+                police: "Police",
+                municipal: "Municipal Corporation",
+                healthcare: "Healthcare"
+            },
+            hi: {
+                hero_title: "AI के साथ स्मार्ट शिकायत प्रबंधन",
+                hero_subtitle: "AI-संचालित सहायता और रीयल-टाइम ट्रैकिंग के साथ कई क्षेत्रों में शिकायत दर्ज करें",
+                file_complaint: "शिकायत दर्ज करें",
+                track_complaints: "शिकायत ट्रैक करें",
+                features_title: "FIXBOT क्यों चुनें?",
+                ai_assistance: "AI सहायता",
+                ai_description: "शिकायत दर्ज करते समय बुद्धिमान सुझाव और मार्गदर्शन प्राप्त करें",
+                real_time: "रीयल-टाइम ट्रैकिंग",
+                tracking_description: "लाइव अपडेट के साथ अपनी शिकायत की स्थिति की निगरानी करें",
+                multilingual: "बहुभाषी समर्थन",
+                language_description: "अंग्रेजी, हिंदी और गुजराती में उपलब्ध",
+                sectors_title: "शिकायत क्षेत्र",
+                college: "कॉलेज",
+                police: "पुलिस",
+                municipal: "नगर निगम",
+                healthcare: "स्वास्थ्य सेवा"
+            },
+            gu: {
+                hero_title: "AI સાથે સ્માર્ટ ફરિયાદ વ્યવસ્થાપન",
+                hero_subtitle: "AI-સંચાલિત સહાયતા અને રીઅલ-ટાઇમ ટ્રેકિંગ સાથે બહુવિધ ક્ષેત્રોમાં ફરિયાદો દાખલ કરો",
+                file_complaint: "ફરિયાદ દાખલ કરો",
+                track_complaints: "ફરિયાદો ટ્રેક કરો",
+                features_title: "FIXBOT કેમ પસંદ કરો?",
+                ai_assistance: "AI સહાયતા",
+                ai_description: "ફરિયાદ દાખલ કરતી વખતે બુદ્ધિશાળી સૂચનો અને માર્ગદર્શન મેળવો",
+                real_time: "રીઅલ-ટાઇમ ટ્રેકિંગ",
+                tracking_description: "લાઇવ અપડેટ્સ સાથે તમારી ફરિયાદની સ્થિતિનું નિરીક્ષણ કરો",
+                multilingual: "બહુભાષી સપોર્ટ",
+                language_description: "અંગ્રેજી, હિન્દી અને ગુજરાતીમાં ઉપલબ્ધ",
+                sectors_title: "ફરિયાદ ક્ષેત્રો",
+                college: "કૉલેજ",
+                police: "પોલીસ",
+                municipal: "મ્યુનિસિપલ કોર્પોરેશન",
+                healthcare: "આરોગ્યસેવા"
+            }
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeApp();
+            loadSampleComplaints();
+            setupEventListeners();
+        });
+
+        function initializeApp() {
+            // Check if user is logged in
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                updateUserInterface();
+            }
+
+            // Set default language
+            const savedLanguage = localStorage.getItem('selectedLanguage') || 'en';
+            currentLanguage = savedLanguage;
+            document.getElementById('languageSelector').value = savedLanguage;
+            updateLanguage();
+        }
+
+        function setupEventListeners() {
+            // Mobile menu toggle
+            document.getElementById('mobileMenuBtn').addEventListener('click', function () {
+                const mobileMenu = document.getElementById('mobileMenu');
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Language selector
+            document.getElementById('languageSelector').addEventListener('change', function () {
+                currentLanguage = this.value;
+                localStorage.setItem('selectedLanguage', currentLanguage);
+                updateLanguage();
+            });
+
+            // Chatbot toggle
+            document.getElementById('chatbotToggle').addEventListener('click', function () {
+                document.getElementById('chatWindow').classList.add('active');
+            });
+
+            document.getElementById('closeChatBtn').addEventListener('click', function () {
+                document.getElementById('chatWindow').classList.remove('active');
+            });
+
+            // Chat functionality
+            document.getElementById('sendChatBtn').addEventListener('click', sendChatMessage);
+            document.getElementById('chatInput').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    sendChatMessage();
+                }
+            });
+
+            // Form submissions
+            document.getElementById('complaintForm').addEventListener('submit', handleComplaintSubmission);
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('signupForm').addEventListener('submit', handleSignup);
+            document.getElementById('contactForm').addEventListener('submit', handleContactForm);
+        }
+
+        function updateLanguage() {
+            const elements = document.querySelectorAll('[data-translate]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-translate');
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                    element.textContent = translations[currentLanguage][key];
+                }
+            });
+        }
+
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.add('hidden'));
+
+            // Show selected page
+            const targetPage = document.getElementById(pageId + 'Page');
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+                targetPage.classList.add('fade-in');
+            }
+
+            // Close mobile menu if open
+            document.getElementById('mobileMenu').classList.add('hidden');
+        }
+
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function updateUserInterface() {
+            if (currentUser) {
+                document.getElementById('userActions').innerHTML = `
+                    <span class="text-gray-700">Welcome, ${currentUser.name}</span>
+                    <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">Logout</button>
+                `;
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const email = formData.get('email') || e.target.querySelector('input[type="email"]').value;
+            const password = formData.get('password') || e.target.querySelector('input[type="password"]').value;
+
+            // Simulate login (in real app, this would be an API call)
+            currentUser = {
+                id: Date.now(),
+                name: email.split('@')[0],
+                email: email
+            };
+
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            updateUserInterface();
+            closeModal('loginModal');
+            showNotification('Login successful!', 'success');
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+            const inputs = e.target.querySelectorAll('input');
+            const name = inputs[0].value;
+            const email = inputs[1].value;
+            const phone = inputs[2].value;
+            const password = inputs[3].value;
+
+            // Simulate signup
+            currentUser = {
+                id: Date.now(),
+                name: name,
+                email: email,
+                phone: phone
+            };
+
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            updateUserInterface();
+            closeModal('signupModal');
+            showNotification('Account created successfully!', 'success');
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            document.getElementById('userActions').innerHTML = `
+                <button onclick="showModal('loginModal')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Login</button>
+                <button onclick="showModal('signupModal')" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">Sign Up</button>
+            `;
+            showNotification('Logged out successfully!', 'info');
+        }
+
+        function handleComplaintSubmission(e) {
+            e.preventDefault();
+
+            if (!currentUser) {
+                showNotification('Please login to file a complaint', 'error');
+                showModal('loginModal');
+                return;
+            }
+
+            const complaint = {
+                id: 'FXB' + Date.now(),
+                name: document.getElementById('complainantName').value,
+                email: document.getElementById('complainantEmail').value,
+                phone: document.getElementById('complainantPhone').value,
+                sector: document.getElementById('complaintSector').value,
+                location: document.getElementById('complaintLocation').value,
+                title: document.getElementById('complaintTitle').value,
+                description: document.getElementById('complaintDescription').value,
+                priority: document.getElementById('complaintPriority').value,
+                status: 'pending',
+                dateSubmitted: new Date().toISOString(),
+                userId: currentUser.id
+            };
+
+            complaints.push(complaint);
+            localStorage.setItem('complaints', JSON.stringify(complaints));
+
+            showNotification(`Complaint submitted successfully! ID: ${complaint.id}`, 'success');
+            document.getElementById('complaintForm').reset();
+            showPage('history');
+            loadComplaintHistory();
+        }
+
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    // Simulate reverse geocoding (in real app, use a geocoding service)
+                    document.getElementById('complaintLocation').value = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
+                    showNotification('Location detected successfully!', 'success');
+                }, function (error) {
+                    showNotification('Unable to get location. Please enter manually.', 'error');
+                });
+            } else {
+                showNotification('Geolocation is not supported by this browser.', 'error');
+            }
+        }
+
+        function loadSampleComplaints() {
+            if (complaints.length === 0) {
+                const sampleComplaints = [
+                    {
+                        id: 'FXB1001',
+                        name: 'John Doe',
+                        email: 'john@example.com',
+                        phone: '+91 98765 43210',
+                        sector: 'municipal',
+                        location: 'Ahmedabad, Gujarat',
+                        title: 'Street Light Not Working',
+                        description: 'The street light on MG Road has been non-functional for the past week.',
+                        priority: 'medium',
+                        status: 'in-progress',
+                        dateSubmitted: new Date(Date.now() - 86400000 * 3).toISOString(),
+                        userId: 1
+                    },
+                    {
+                        id: 'FXB1002',
+                        name: 'Jane Smith',
+                        email: 'jane@example.com',
+                        phone: '+91 87654 32109',
+                        sector: 'college',
+                        location: 'Gandhinagar, Gujarat',
+                        title: 'Library AC Not Working',
+                        description: 'The air conditioning system in the main library has been malfunctioning.',
+                        priority: 'high',
+                        status: 'resolved',
+                        dateSubmitted: new Date(Date.now() - 86400000 * 7).toISOString(),
+                        userId: 2
+                    }
+                ];
+                complaints = sampleComplaints;
+                localStorage.setItem('complaints', JSON.stringify(complaints));
+            }
+            loadComplaintHistory();
+        }
+
+        function loadComplaintHistory() {
+            const complaintsList = document.getElementById('complaintsList');
+            if (!complaintsList) return;
+
+            const userComplaints = currentUser ?
+                complaints.filter(c => c.userId === currentUser.id) :
+                complaints.slice(0, 3); // Show sample complaints if not logged in
+
+            if (userComplaints.length === 0) {
+                complaintsList.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-inbox text-gray-400 text-6xl mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-600 mb-2">No Complaints Found</h3>
+                        <p class="text-gray-500 mb-4">You haven't filed any complaints yet.</p>
+                        <button onclick="showPage('complaint')" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                            File Your First Complaint
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            complaintsList.innerHTML = userComplaints.map(complaint => `
+                <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">${complaint.title}</h3>
+                            <p class="text-sm text-gray-600">ID: ${complaint.id}</p>
+                        </div>
+                        <div class="flex items-center space-x-3 mt-2 md:mt-0">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(complaint.status)}">
+                                ${complaint.status.charAt(0).toUpperCase() + complaint.status.slice(1)}
+                            </span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(complaint.priority)}">
+                                ${complaint.priority.charAt(0).toUpperCase() + complaint.priority.slice(1)}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+                        <div>
+                            <p><i class="fas fa-building mr-2"></i><strong>Sector:</strong> ${complaint.sector}</p>
+                            <p><i class="fas fa-map-marker-alt mr-2"></i><strong>Location:</strong> ${complaint.location}</p>
+                        </div>
+                        <div>
+                            <p><i class="fas fa-calendar mr-2"></i><strong>Submitted:</strong> ${new Date(complaint.dateSubmitted).toLocaleDateString()}</p>
+                            <p><i class="fas fa-user mr-2"></i><strong>Contact:</strong> ${complaint.phone}</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <p class="text-gray-700">${complaint.description}</p>
+                    </div>
+                    <div class="mt-4 flex justify-end space-x-2">
+                        <button onclick="openWhatsApp('${complaint.sector}')" class="text-green-600 hover:text-green-800 text-sm">
+                            <i class="fab fa-whatsapp mr-1"></i>Contact Support
+                        </button>
+                        <button onclick="viewComplaintDetails('${complaint.id}')" class="text-blue-600 hover:text-blue-800 text-sm">
+                            <i class="fas fa-eye mr-1"></i>View Details
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'pending': 'bg-yellow-100 text-yellow-800',
+                'in-progress': 'bg-blue-100 text-blue-800',
+                'resolved': 'bg-green-100 text-green-800',
+                'closed': 'bg-gray-100 text-gray-800'
+            };
+            return colors[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function getPriorityColor(priority) {
+            const colors = {
+                'low': 'bg-green-100 text-green-800',
+                'medium': 'bg-yellow-100 text-yellow-800',
+                'high': 'bg-orange-100 text-orange-800',
+                'urgent': 'bg-red-100 text-red-800'
+            };
+            return colors[priority] || 'bg-gray-100 text-gray-800';
+        }
+
+        function filterComplaints() {
+            // Implementation for filtering complaints
+            loadComplaintHistory();
+        }
+
+        function viewComplaintDetails(complaintId) {
+            const complaint = complaints.find(c => c.id === complaintId);
+            if (complaint) {
+                alert(`Complaint Details:\n\nID: ${complaint.id}\nTitle: ${complaint.title}\nStatus: ${complaint.status}\nDescription: ${complaint.description}`);
+            }
+        }
+
+        function openWhatsApp(sector) {
+            const whatsappNumbers = {
+                'college': '+919876543210',
+                'police': '+919876543211',
+                'municipal': '+919876543212',
+                'healthcare': '+919876543213'
+            };
+
+            const number = whatsappNumbers[sector] || '+919876543210';
+            const message = `Hello, I need assistance with a ${sector} related complaint.`;
+            const url = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            const chatMessages = document.getElementById('chatMessages');
+
+            // Add user message
+            chatMessages.innerHTML += `
+                <div class="flex justify-end mb-3">
+                    <div class="bg-blue-600 text-white p-3 rounded-lg max-w-xs">
+                        <p class="text-sm">${message}</p>
+                    </div>
+                </div>
+            `;
+
+            // Generate AI response
+            setTimeout(() => {
+                const response = generateAIResponse(message);
+                chatMessages.innerHTML += `
+                    <div class="bg-white p-3 rounded-lg mb-3 shadow-sm max-w-xs">
+                        <p class="text-sm">${response}</p>
+                    </div>
+                `;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1000);
+
+            input.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function generateAIResponse(message) {
+            const responses = {
+                'complaint': 'To file a complaint, click on "File Complaint" in the menu. Make sure to provide all required details including photos if available.',
+                'status': 'You can track your complaint status in the "My Complaints" section. Each complaint has a unique ID for tracking.',
+                'sector': 'We support multiple sectors: College, Police, Municipal Corporation, Healthcare, Transport, Electricity, and Water Supply.',
+                'urgent': 'For urgent complaints, please set the priority to "Urgent" when filing. You can also contact the relevant sector directly via WhatsApp.',
+                'help': 'I can help you with filing complaints, tracking status, choosing sectors, and general guidance. What specific help do you need?',
+                'login': 'Please login or create an account to file and track complaints. Click the Login button in the top right corner.',
+                'language': 'FIXBOT supports English, Hindi (हिंदी), and Gujarati (ગુજરાતી). Use the language selector in the header.',
+                'location': 'You can use your current location or enter it manually when filing a complaint. Location helps route your complaint to the right authority.'
+            };
+
+            const lowerMessage = message.toLowerCase();
+
+            for (const [key, response] of Object.entries(responses)) {
+                if (lowerMessage.includes(key)) {
+                    return response;
+                }
+            }
+
+            return 'I understand you need help. Could you please be more specific? I can assist with filing complaints, tracking status, sector selection, or general guidance.';
+        }
+
+        function handleContactForm(e) {
+            e.preventDefault();
+            showNotification('Thank you for your message! We will get back to you soon.', 'success');
+            e.target.reset();
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+
+            notificationText.textContent = message;
+
+            // Set color based on type
+            const colors = {
+                'success': 'bg-green-500',
+                'error': 'bg-red-500',
+                'info': 'bg-blue-500',
+                'warning': 'bg-yellow-500'
+            };
+
+            notification.className = `notification ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg`;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        // Initialize complaint history on page load
+        window.addEventListener('load', function () {
+            if (document.getElementById('complaintsList')) {
+                loadComplaintHistory();
+            }
+        });
+    </script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'96936560e7933e4c',t:'MTc1NDE5ODc0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+    <iframe height="1" width="1"
+        style="position: absolute; top: 0px; left: 0px; border: none; visibility: hidden;"></iframe>
+
+    <span id="PING_IFRAME_FORM_DETECTION" style="display: none;"></span>
+</body>
+
+</html>
