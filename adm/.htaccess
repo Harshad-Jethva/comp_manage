@@ -1,0 +1,10 @@
+DirectoryIndex login.php
+
+# Block direct access to sensitive files
+<Files "admin_functions.php">
+    Require all denied
+</Files>
+
+<Files "../dbconfig.php">
+    Require all denied
+</Files>

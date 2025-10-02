@@ -1,0 +1,3777 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIXBOT Admin Panel - Smart Complaint Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Theme Variables */
+        :root {
+            --primary-blue: #1e40af;
+            --primary-purple: #7c3aed;
+            --dark-bg: #0f172a;
+            --dark-surface: #1e293b;
+            --dark-border: #334155;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --danger-red: #ef4444;
+        }
+
+        /* Dark Mode Styles */
+        .dark {
+            background-color: var(--dark-bg);
+            color: #f1f5f9;
+        }
+
+        .dark .bg-white {
+            background-color: var(--dark-surface) !important;
+        }
+
+        .dark .border-gray-200 {
+            border-color: var(--dark-border) !important;
+        }
+
+        .dark .text-gray-800 {
+            color: #f1f5f9 !important;
+        }
+
+        .dark .text-gray-600 {
+            color: #cbd5e1 !important;
+        }
+
+        .dark .text-gray-500 {
+            color: #94a3b8 !important;
+        }
+
+        /* Custom Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            transition: all 0.3s ease;
+            width: 280px;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar.collapsed .sidebar-text {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-icon {
+            margin: 0 auto;
+        }
+
+        /* Card Hover Effects */
+        .hover-lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .dark ::-webkit-scrollbar-track {
+            background: var(--dark-surface);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
+            border-radius: 4px;
+        }
+
+        /* Status Badges */
+        .status-pending {
+            @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+        }
+
+        .status-progress {
+            @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
+        }
+
+        .status-resolved {
+            @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+        }
+
+        .status-overdue {
+            @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+        }
+
+        /* Priority Badges */
+        .priority-low {
+            @apply bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200;
+        }
+
+        .priority-medium {
+            @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+        }
+
+        .priority-high {
+            @apply bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200;
+        }
+
+        .priority-urgent {
+            @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+        }
+
+        /* Table Styles */
+        .data-table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .data-table th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            transform: scale(0.7);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        /* AI Confidence Indicator */
+        .confidence-bar {
+            height: 4px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                z-index: 50;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
+
+        /* Page Visibility */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+    </style>
+    <style>
+        *,
+        ::before,
+        ::after {
+            --tw-border-spacing-x: 0;
+            --tw-border-spacing-y: 0;
+            --tw-translate-x: 0;
+            --tw-translate-y: 0;
+            --tw-rotate: 0;
+            --tw-skew-x: 0;
+            --tw-skew-y: 0;
+            --tw-scale-x: 1;
+            --tw-scale-y: 1;
+            --tw-pan-x: ;
+            --tw-pan-y: ;
+            --tw-pinch-zoom: ;
+            --tw-scroll-snap-strictness: proximity;
+            --tw-gradient-from-position: ;
+            --tw-gradient-via-position: ;
+            --tw-gradient-to-position: ;
+            --tw-ordinal: ;
+            --tw-slashed-zero: ;
+            --tw-numeric-figure: ;
+            --tw-numeric-spacing: ;
+            --tw-numeric-fraction: ;
+            --tw-ring-inset: ;
+            --tw-ring-offset-width: 0px;
+            --tw-ring-offset-color: #fff;
+            --tw-ring-color: rgb(59 130 246 / 0.5);
+            --tw-ring-offset-shadow: 0 0 #0000;
+            --tw-ring-shadow: 0 0 #0000;
+            --tw-shadow: 0 0 #0000;
+            --tw-shadow-colored: 0 0 #0000;
+            --tw-blur: ;
+            --tw-brightness: ;
+            --tw-contrast: ;
+            --tw-grayscale: ;
+            --tw-hue-rotate: ;
+            --tw-invert: ;
+            --tw-saturate: ;
+            --tw-sepia: ;
+            --tw-drop-shadow: ;
+            --tw-backdrop-blur: ;
+            --tw-backdrop-brightness: ;
+            --tw-backdrop-contrast: ;
+            --tw-backdrop-grayscale: ;
+            --tw-backdrop-hue-rotate: ;
+            --tw-backdrop-invert: ;
+            --tw-backdrop-opacity: ;
+            --tw-backdrop-saturate: ;
+            --tw-backdrop-sepia: ;
+            --tw-contain-size: ;
+            --tw-contain-layout: ;
+            --tw-contain-paint: ;
+            --tw-contain-style:
+        }
+
+        ::backdrop {
+            --tw-border-spacing-x: 0;
+            --tw-border-spacing-y: 0;
+            --tw-translate-x: 0;
+            --tw-translate-y: 0;
+            --tw-rotate: 0;
+            --tw-skew-x: 0;
+            --tw-skew-y: 0;
+            --tw-scale-x: 1;
+            --tw-scale-y: 1;
+            --tw-pan-x: ;
+            --tw-pan-y: ;
+            --tw-pinch-zoom: ;
+            --tw-scroll-snap-strictness: proximity;
+            --tw-gradient-from-position: ;
+            --tw-gradient-via-position: ;
+            --tw-gradient-to-position: ;
+            --tw-ordinal: ;
+            --tw-slashed-zero: ;
+            --tw-numeric-figure: ;
+            --tw-numeric-spacing: ;
+            --tw-numeric-fraction: ;
+            --tw-ring-inset: ;
+            --tw-ring-offset-width: 0px;
+            --tw-ring-offset-color: #fff;
+            --tw-ring-color: rgb(59 130 246 / 0.5);
+            --tw-ring-offset-shadow: 0 0 #0000;
+            --tw-ring-shadow: 0 0 #0000;
+            --tw-shadow: 0 0 #0000;
+            --tw-shadow-colored: 0 0 #0000;
+            --tw-blur: ;
+            --tw-brightness: ;
+            --tw-contrast: ;
+            --tw-grayscale: ;
+            --tw-hue-rotate: ;
+            --tw-invert: ;
+            --tw-saturate: ;
+            --tw-sepia: ;
+            --tw-drop-shadow: ;
+            --tw-backdrop-blur: ;
+            --tw-backdrop-brightness: ;
+            --tw-backdrop-contrast: ;
+            --tw-backdrop-grayscale: ;
+            --tw-backdrop-hue-rotate: ;
+            --tw-backdrop-invert: ;
+            --tw-backdrop-opacity: ;
+            --tw-backdrop-saturate: ;
+            --tw-backdrop-sepia: ;
+            --tw-contain-size: ;
+            --tw-contain-layout: ;
+            --tw-contain-paint: ;
+            --tw-contain-style:
+        }
+
+        /* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */
+        *,
+        ::after,
+        ::before {
+            box-sizing: border-box;
+            border-width: 0;
+            border-style: solid;
+            border-color: #e5e7eb
+        }
+
+        ::after,
+        ::before {
+            --tw-content: ''
+        }
+
+        :host,
+        html {
+            line-height: 1.5;
+            -webkit-text-size-adjust: 100%;
+            -moz-tab-size: 4;
+            tab-size: 4;
+            font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            font-feature-settings: normal;
+            font-variation-settings: normal;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        body {
+            margin: 0;
+            line-height: inherit
+        }
+
+        hr {
+            height: 0;
+            color: inherit;
+            border-top-width: 1px
+        }
+
+        abbr:where([title]) {
+            -webkit-text-decoration: underline dotted;
+            text-decoration: underline dotted
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-size: inherit;
+            font-weight: inherit
+        }
+
+        a {
+            color: inherit;
+            text-decoration: inherit
+        }
+
+        b,
+        strong {
+            font-weight: bolder
+        }
+
+        code,
+        kbd,
+        pre,
+        samp {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-feature-settings: normal;
+            font-variation-settings: normal;
+            font-size: 1em
+        }
+
+        small {
+            font-size: 80%
+        }
+
+        sub,
+        sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative;
+            vertical-align: baseline
+        }
+
+        sub {
+            bottom: -.25em
+        }
+
+        sup {
+            top: -.5em
+        }
+
+        table {
+            text-indent: 0;
+            border-color: inherit;
+            border-collapse: collapse
+        }
+
+        button,
+        input,
+        optgroup,
+        select,
+        textarea {
+            font-family: inherit;
+            font-feature-settings: inherit;
+            font-variation-settings: inherit;
+            font-size: 100%;
+            font-weight: inherit;
+            line-height: inherit;
+            letter-spacing: inherit;
+            color: inherit;
+            margin: 0;
+            padding: 0
+        }
+
+        button,
+        select {
+            text-transform: none
+        }
+
+        button,
+        input:where([type=button]),
+        input:where([type=reset]),
+        input:where([type=submit]) {
+            -webkit-appearance: button;
+            background-color: transparent;
+            background-image: none
+        }
+
+        :-moz-focusring {
+            outline: auto
+        }
+
+        :-moz-ui-invalid {
+            box-shadow: none
+        }
+
+        progress {
+            vertical-align: baseline
+        }
+
+        ::-webkit-inner-spin-button,
+        ::-webkit-outer-spin-button {
+            height: auto
+        }
+
+        [type=search] {
+            -webkit-appearance: textfield;
+            outline-offset: -2px
+        }
+
+        ::-webkit-search-decoration {
+            -webkit-appearance: none
+        }
+
+        ::-webkit-file-upload-button {
+            -webkit-appearance: button;
+            font: inherit
+        }
+
+        summary {
+            display: list-item
+        }
+
+        blockquote,
+        dd,
+        dl,
+        figure,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        hr,
+        p,
+        pre {
+            margin: 0
+        }
+
+        fieldset {
+            margin: 0;
+            padding: 0
+        }
+
+        legend {
+            padding: 0
+        }
+
+        menu,
+        ol,
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0
+        }
+
+        dialog {
+            padding: 0
+        }
+
+        textarea {
+            resize: vertical
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            opacity: 1;
+            color: #9ca3af
+        }
+
+        [role=button],
+        button {
+            cursor: pointer
+        }
+
+        :disabled {
+            cursor: default
+        }
+
+        audio,
+        canvas,
+        embed,
+        iframe,
+        img,
+        object,
+        svg,
+        video {
+            display: block;
+            vertical-align: middle
+        }
+
+        img,
+        video {
+            max-width: 100%;
+            height: auto
+        }
+
+        [hidden]:where(:not([hidden=until-found])) {
+            display: none
+        }
+
+        .fixed {
+            position: fixed
+        }
+
+        .absolute {
+            position: absolute
+        }
+
+        .relative {
+            position: relative
+        }
+
+        .sticky {
+            position: sticky
+        }
+
+        .-right-1 {
+            right: -0.25rem
+        }
+
+        .-top-1 {
+            top: -0.25rem
+        }
+
+        .bottom-4 {
+            bottom: 1rem
+        }
+
+        .left-0 {
+            left: 0px
+        }
+
+        .left-3 {
+            left: 0.75rem
+        }
+
+        .left-4 {
+            left: 1rem
+        }
+
+        .right-4 {
+            right: 1rem
+        }
+
+        .top-0 {
+            top: 0px
+        }
+
+        .top-1\/2 {
+            top: 50%
+        }
+
+        .z-30 {
+            z-index: 30
+        }
+
+        .z-40 {
+            z-index: 40
+        }
+
+        .mx-4 {
+            margin-left: 1rem;
+            margin-right: 1rem
+        }
+
+        .mx-auto {
+            margin-left: auto;
+            margin-right: auto
+        }
+
+        .mb-1 {
+            margin-bottom: 0.25rem
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem
+        }
+
+        .mb-3 {
+            margin-bottom: 0.75rem
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem
+        }
+
+        .mb-6 {
+            margin-bottom: 1.5rem
+        }
+
+        .mb-8 {
+            margin-bottom: 2rem
+        }
+
+        .ml-2 {
+            margin-left: 0.5rem
+        }
+
+        .ml-3 {
+            margin-left: 0.75rem
+        }
+
+        .ml-80 {
+            margin-left: 20rem
+        }
+
+        .ml-auto {
+            margin-left: auto
+        }
+
+        .mr-1 {
+            margin-right: 0.25rem
+        }
+
+        .mr-2 {
+            margin-right: 0.5rem
+        }
+
+        .mr-3 {
+            margin-right: 0.75rem
+        }
+
+        .mt-1 {
+            margin-top: 0.25rem
+        }
+
+        .mt-2 {
+            margin-top: 0.5rem
+        }
+
+        .mt-3 {
+            margin-top: 0.75rem
+        }
+
+        .mt-4 {
+            margin-top: 1rem
+        }
+
+        .mt-6 {
+            margin-top: 1.5rem
+        }
+
+        .block {
+            display: block
+        }
+
+        .flex {
+            display: flex
+        }
+
+        .inline-flex {
+            display: inline-flex
+        }
+
+        .grid {
+            display: grid
+        }
+
+        .hidden {
+            display: none
+        }
+
+        .h-1 {
+            height: 0.25rem
+        }
+
+        .h-10 {
+            height: 2.5rem
+        }
+
+        .h-2 {
+            height: 0.5rem
+        }
+
+        .h-20 {
+            height: 5rem
+        }
+
+        .h-3 {
+            height: 0.75rem
+        }
+
+        .h-5 {
+            height: 1.25rem
+        }
+
+        .h-6 {
+            height: 1.5rem
+        }
+
+        .h-8 {
+            height: 2rem
+        }
+
+        .h-full {
+            height: 100%
+        }
+
+        .max-h-80 {
+            max-height: 20rem
+        }
+
+        .max-h-\[90vh\] {
+            max-height: 90vh
+        }
+
+        .w-10 {
+            width: 2.5rem
+        }
+
+        .w-2 {
+            width: 0.5rem
+        }
+
+        .w-20 {
+            width: 5rem
+        }
+
+        .w-3 {
+            width: 0.75rem
+        }
+
+        .w-5 {
+            width: 1.25rem
+        }
+
+        .w-6 {
+            width: 1.5rem
+        }
+
+        .w-64 {
+            width: 16rem
+        }
+
+        .w-8 {
+            width: 2rem
+        }
+
+        .w-full {
+            width: 100%
+        }
+
+        .max-w-4xl {
+            max-width: 56rem
+        }
+
+        .flex-1 {
+            flex: 1 1 0%
+        }
+
+        .-translate-y-1\/2 {
+            --tw-translate-y: -50%;
+            transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))
+        }
+
+        .transform {
+            transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))
+        }
+
+        @keyframes pulse {
+            50% {
+                opacity: .5
+            }
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite
+        }
+
+        .grid-cols-1 {
+            grid-template-columns: repeat(1, minmax(0, 1fr))
+        }
+
+        .grid-cols-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr))
+        }
+
+        .flex-col {
+            flex-direction: column
+        }
+
+        .items-start {
+            align-items: flex-start
+        }
+
+        .items-center {
+            align-items: center
+        }
+
+        .justify-center {
+            justify-content: center
+        }
+
+        .justify-between {
+            justify-content: space-between
+        }
+
+        .gap-2 {
+            gap: 0.5rem
+        }
+
+        .gap-4 {
+            gap: 1rem
+        }
+
+        .gap-6 {
+            gap: 1.5rem
+        }
+
+        .space-x-2> :not([hidden])~ :not([hidden]) {
+            --tw-space-x-reverse: 0;
+            margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+            margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))
+        }
+
+        .space-x-3> :not([hidden])~ :not([hidden]) {
+            --tw-space-x-reverse: 0;
+            margin-right: calc(0.75rem * var(--tw-space-x-reverse));
+            margin-left: calc(0.75rem * calc(1 - var(--tw-space-x-reverse)))
+        }
+
+        .space-x-4> :not([hidden])~ :not([hidden]) {
+            --tw-space-x-reverse: 0;
+            margin-right: calc(1rem * var(--tw-space-x-reverse));
+            margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)))
+        }
+
+        .space-y-1> :not([hidden])~ :not([hidden]) {
+            --tw-space-y-reverse: 0;
+            margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));
+            margin-bottom: calc(0.25rem * var(--tw-space-y-reverse))
+        }
+
+        .space-y-2> :not([hidden])~ :not([hidden]) {
+            --tw-space-y-reverse: 0;
+            margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
+            margin-bottom: calc(0.5rem * var(--tw-space-y-reverse))
+        }
+
+        .space-y-3> :not([hidden])~ :not([hidden]) {
+            --tw-space-y-reverse: 0;
+            margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
+            margin-bottom: calc(0.75rem * var(--tw-space-y-reverse))
+        }
+
+        .space-y-4> :not([hidden])~ :not([hidden]) {
+            --tw-space-y-reverse: 0;
+            margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
+            margin-bottom: calc(1rem * var(--tw-space-y-reverse))
+        }
+
+        .space-y-6> :not([hidden])~ :not([hidden]) {
+            --tw-space-y-reverse: 0;
+            margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));
+            margin-bottom: calc(1.5rem * var(--tw-space-y-reverse))
+        }
+
+        .divide-y> :not([hidden])~ :not([hidden]) {
+            --tw-divide-y-reverse: 0;
+            border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
+            border-bottom-width: calc(1px * var(--tw-divide-y-reverse))
+        }
+
+        .divide-gray-200> :not([hidden])~ :not([hidden]) {
+            --tw-divide-opacity: 1;
+            border-color: rgb(229 231 235 / var(--tw-divide-opacity, 1))
+        }
+
+        .overflow-hidden {
+            overflow: hidden
+        }
+
+        .overflow-x-auto {
+            overflow-x: auto
+        }
+
+        .overflow-y-auto {
+            overflow-y: auto
+        }
+
+        .whitespace-nowrap {
+            white-space: nowrap
+        }
+
+        .rounded {
+            border-radius: 0.25rem
+        }
+
+        .rounded-2xl {
+            border-radius: 1rem
+        }
+
+        .rounded-full {
+            border-radius: 9999px
+        }
+
+        .rounded-lg {
+            border-radius: 0.5rem
+        }
+
+        .rounded-xl {
+            border-radius: 0.75rem
+        }
+
+        .border {
+            border-width: 1px
+        }
+
+        .border-0 {
+            border-width: 0px
+        }
+
+        .border-b {
+            border-bottom-width: 1px
+        }
+
+        .border-l-4 {
+            border-left-width: 4px
+        }
+
+        .border-r {
+            border-right-width: 1px
+        }
+
+        .border-t {
+            border-top-width: 1px
+        }
+
+        .border-gray-200 {
+            --tw-border-opacity: 1;
+            border-color: rgb(229 231 235 / var(--tw-border-opacity, 1))
+        }
+
+        .border-green-500 {
+            --tw-border-opacity: 1;
+            border-color: rgb(34 197 94 / var(--tw-border-opacity, 1))
+        }
+
+        .border-orange-500 {
+            --tw-border-opacity: 1;
+            border-color: rgb(249 115 22 / var(--tw-border-opacity, 1))
+        }
+
+        .border-red-500 {
+            --tw-border-opacity: 1;
+            border-color: rgb(239 68 68 / var(--tw-border-opacity, 1))
+        }
+
+        .border-yellow-500 {
+            --tw-border-opacity: 1;
+            border-color: rgb(234 179 8 / var(--tw-border-opacity, 1))
+        }
+
+        .bg-gray-50 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-blue-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-blue-50 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-blue-500 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(59 130 246 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-blue-600 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(37 99 235 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-gray-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-gray-200 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-gray-300 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(209 213 219 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-gray-400 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(156 163 175 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-green-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-green-200 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(187 247 208 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-green-50 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-green-500 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-green-600 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-orange-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(255 237 213 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-orange-50 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(255 247 237 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-orange-500 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(249 115 22 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-purple-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 232 255 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-purple-500 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(168 85 247 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-red-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-red-50 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-red-500 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(239 68 68 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-white {
+            --tw-bg-opacity: 1;
+            background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-yellow-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(254 249 195 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-yellow-50 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(254 252 232 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-yellow-500 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(234 179 8 / var(--tw-bg-opacity, 1))
+        }
+
+        .bg-gradient-to-r {
+            background-image: linear-gradient(to right, var(--tw-gradient-stops))
+        }
+
+        .from-blue-50 {
+            --tw-gradient-from: #eff6ff var(--tw-gradient-from-position);
+            --tw-gradient-to: rgb(239 246 255 / 0) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+        }
+
+        .from-blue-500 {
+            --tw-gradient-from: #3b82f6 var(--tw-gradient-from-position);
+            --tw-gradient-to: rgb(59 130 246 / 0) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+        }
+
+        .from-blue-600 {
+            --tw-gradient-from: #2563eb var(--tw-gradient-from-position);
+            --tw-gradient-to: rgb(37 99 235 / 0) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+        }
+
+        .from-green-500 {
+            --tw-gradient-from: #22c55e var(--tw-gradient-from-position);
+            --tw-gradient-to: rgb(34 197 94 / 0) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+        }
+
+        .from-purple-50 {
+            --tw-gradient-from: #faf5ff var(--tw-gradient-from-position);
+            --tw-gradient-to: rgb(250 245 255 / 0) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+        }
+
+        .from-purple-500 {
+            --tw-gradient-from: #a855f7 var(--tw-gradient-from-position);
+            --tw-gradient-to: rgb(168 85 247 / 0) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+        }
+
+        .from-yellow-50 {
+            --tw-gradient-from: #fefce8 var(--tw-gradient-from-position);
+            --tw-gradient-to: rgb(254 252 232 / 0) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+        }
+
+        .to-blue-50 {
+            --tw-gradient-to: #eff6ff var(--tw-gradient-to-position)
+        }
+
+        .to-blue-500 {
+            --tw-gradient-to: #3b82f6 var(--tw-gradient-to-position)
+        }
+
+        .to-orange-50 {
+            --tw-gradient-to: #fff7ed var(--tw-gradient-to-position)
+        }
+
+        .to-purple-50 {
+            --tw-gradient-to: #faf5ff var(--tw-gradient-to-position)
+        }
+
+        .to-purple-500 {
+            --tw-gradient-to: #a855f7 var(--tw-gradient-to-position)
+        }
+
+        .to-purple-600 {
+            --tw-gradient-to: #9333ea var(--tw-gradient-to-position)
+        }
+
+        .p-1 {
+            padding: 0.25rem
+        }
+
+        .p-2 {
+            padding: 0.5rem
+        }
+
+        .p-3 {
+            padding: 0.75rem
+        }
+
+        .p-4 {
+            padding: 1rem
+        }
+
+        .p-6 {
+            padding: 1.5rem
+        }
+
+        .p-8 {
+            padding: 2rem
+        }
+
+        .px-2 {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem
+        }
+
+        .px-2\.5 {
+            padding-left: 0.625rem;
+            padding-right: 0.625rem
+        }
+
+        .px-3 {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem
+        }
+
+        .px-4 {
+            padding-left: 1rem;
+            padding-right: 1rem
+        }
+
+        .px-6 {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem
+        }
+
+        .py-0\.5 {
+            padding-top: 0.125rem;
+            padding-bottom: 0.125rem
+        }
+
+        .py-1 {
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem
+        }
+
+        .py-2 {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem
+        }
+
+        .py-3 {
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem
+        }
+
+        .py-4 {
+            padding-top: 1rem;
+            padding-bottom: 1rem
+        }
+
+        .pl-10 {
+            padding-left: 2.5rem
+        }
+
+        .text-left {
+            text-align: left
+        }
+
+        .text-center {
+            text-align: center
+        }
+
+        .text-right {
+            text-align: right
+        }
+
+        .text-2xl {
+            font-size: 1.5rem;
+            line-height: 2rem
+        }
+
+        .text-3xl {
+            font-size: 1.875rem;
+            line-height: 2.25rem
+        }
+
+        .text-lg {
+            font-size: 1.125rem;
+            line-height: 1.75rem
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+            line-height: 1.25rem
+        }
+
+        .text-xl {
+            font-size: 1.25rem;
+            line-height: 1.75rem
+        }
+
+        .text-xs {
+            font-size: 0.75rem;
+            line-height: 1rem
+        }
+
+        .font-bold {
+            font-weight: 700
+        }
+
+        .font-medium {
+            font-weight: 500
+        }
+
+        .font-semibold {
+            font-weight: 600
+        }
+
+        .uppercase {
+            text-transform: uppercase
+        }
+
+        .tracking-wider {
+            letter-spacing: 0.05em
+        }
+
+        .text-blue-600 {
+            --tw-text-opacity: 1;
+            color: rgb(37 99 235 / var(--tw-text-opacity, 1))
+        }
+
+        .text-blue-700 {
+            --tw-text-opacity: 1;
+            color: rgb(29 78 216 / var(--tw-text-opacity, 1))
+        }
+
+        .text-blue-800 {
+            --tw-text-opacity: 1;
+            color: rgb(30 64 175 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-400 {
+            --tw-text-opacity: 1;
+            color: rgb(156 163 175 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-500 {
+            --tw-text-opacity: 1;
+            color: rgb(107 114 128 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-600 {
+            --tw-text-opacity: 1;
+            color: rgb(75 85 99 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-700 {
+            --tw-text-opacity: 1;
+            color: rgb(55 65 81 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-800 {
+            --tw-text-opacity: 1;
+            color: rgb(31 41 55 / var(--tw-text-opacity, 1))
+        }
+
+        .text-gray-900 {
+            --tw-text-opacity: 1;
+            color: rgb(17 24 39 / var(--tw-text-opacity, 1))
+        }
+
+        .text-green-500 {
+            --tw-text-opacity: 1;
+            color: rgb(34 197 94 / var(--tw-text-opacity, 1))
+        }
+
+        .text-green-600 {
+            --tw-text-opacity: 1;
+            color: rgb(22 163 74 / var(--tw-text-opacity, 1))
+        }
+
+        .text-green-700 {
+            --tw-text-opacity: 1;
+            color: rgb(21 128 61 / var(--tw-text-opacity, 1))
+        }
+
+        .text-green-800 {
+            --tw-text-opacity: 1;
+            color: rgb(22 101 52 / var(--tw-text-opacity, 1))
+        }
+
+        .text-indigo-600 {
+            --tw-text-opacity: 1;
+            color: rgb(79 70 229 / var(--tw-text-opacity, 1))
+        }
+
+        .text-orange-600 {
+            --tw-text-opacity: 1;
+            color: rgb(234 88 12 / var(--tw-text-opacity, 1))
+        }
+
+        .text-purple-600 {
+            --tw-text-opacity: 1;
+            color: rgb(147 51 234 / var(--tw-text-opacity, 1))
+        }
+
+        .text-red-500 {
+            --tw-text-opacity: 1;
+            color: rgb(239 68 68 / var(--tw-text-opacity, 1))
+        }
+
+        .text-red-600 {
+            --tw-text-opacity: 1;
+            color: rgb(220 38 38 / var(--tw-text-opacity, 1))
+        }
+
+        .text-red-800 {
+            --tw-text-opacity: 1;
+            color: rgb(153 27 27 / var(--tw-text-opacity, 1))
+        }
+
+        .text-white {
+            --tw-text-opacity: 1;
+            color: rgb(255 255 255 / var(--tw-text-opacity, 1))
+        }
+
+        .text-yellow-600 {
+            --tw-text-opacity: 1;
+            color: rgb(202 138 4 / var(--tw-text-opacity, 1))
+        }
+
+        .shadow-2xl {
+            --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);
+            box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+        }
+
+        .shadow-lg {
+            --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+            box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+        }
+
+        .shadow-xl {
+            --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);
+            box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)
+        }
+
+        .transition-colors {
+            transition-property: color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms
+        }
+
+        .transition-all {
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms
+        }
+
+        .transition-transform {
+            transition-property: transform;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms
+        }
+
+        .duration-300 {
+            transition-duration: 300ms
+        }
+
+        .duration-200 {
+            transition-duration: 200ms
+        }
+
+        .hover\:bg-blue-50:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-blue-700:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(29 78 216 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-gray-200:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-gray-400:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(156 163 175 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-gray-50:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-green-700:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-orange-600:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(234 88 12 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-red-600:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:bg-yellow-600:hover {
+            --tw-bg-opacity: 1;
+            background-color: rgb(202 138 4 / var(--tw-bg-opacity, 1))
+        }
+
+        .hover\:text-blue-800:hover {
+            --tw-text-opacity: 1;
+            color: rgb(30 64 175 / var(--tw-text-opacity, 1))
+        }
+
+        .hover\:text-blue-900:hover {
+            --tw-text-opacity: 1;
+            color: rgb(30 58 138 / var(--tw-text-opacity, 1))
+        }
+
+        .hover\:text-gray-700:hover {
+            --tw-text-opacity: 1;
+            color: rgb(55 65 81 / var(--tw-text-opacity, 1))
+        }
+
+        .hover\:text-gray-800:hover {
+            --tw-text-opacity: 1;
+            color: rgb(31 41 55 / var(--tw-text-opacity, 1))
+        }
+
+        .hover\:text-green-900:hover {
+            --tw-text-opacity: 1;
+            color: rgb(20 83 45 / var(--tw-text-opacity, 1))
+        }
+
+        .hover\:text-red-900:hover {
+            --tw-text-opacity: 1;
+            color: rgb(127 29 29 / var(--tw-text-opacity, 1))
+        }
+
+        .focus\:bg-white:focus {
+            --tw-bg-opacity: 1;
+            background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1))
+        }
+
+        .focus\:ring-2:focus {
+            --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+            --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+            box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)
+        }
+
+        .focus\:ring-blue-500:focus {
+            --tw-ring-opacity: 1;
+            --tw-ring-color: rgb(59 130 246 / var(--tw-ring-opacity, 1))
+        }
+
+        .group:hover .group-hover\:scale-110 {
+            --tw-scale-x: 1.1;
+            --tw-scale-y: 1.1;
+            transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))
+        }
+
+        @media (min-width: 640px) {
+            .sm\:flex-row {
+                flex-direction: row
+            }
+
+            .sm\:space-x-4> :not([hidden])~ :not([hidden]) {
+                --tw-space-x-reverse: 0;
+                margin-right: calc(1rem * var(--tw-space-x-reverse));
+                margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)))
+            }
+
+            .sm\:space-y-0> :not([hidden])~ :not([hidden]) {
+                --tw-space-y-reverse: 0;
+                margin-top: calc(0px * calc(1 - var(--tw-space-y-reverse)));
+                margin-bottom: calc(0px * var(--tw-space-y-reverse))
+            }
+        }
+
+        @media (min-width: 768px) {
+            .md\:block {
+                display: block
+            }
+
+            .md\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+
+            .md\:grid-cols-3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr))
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .lg\:col-span-2 {
+                grid-column: span 2 / span 2
+            }
+
+            .lg\:hidden {
+                display: none
+            }
+
+            .lg\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+
+            .lg\:grid-cols-3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr))
+            }
+
+            .lg\:grid-cols-4 {
+                grid-template-columns: repeat(4, minmax(0, 1fr))
+            }
+
+            .lg\:flex-row {
+                flex-direction: row
+            }
+
+            .lg\:items-center {
+                align-items: center
+            }
+
+            .lg\:justify-between {
+                justify-content: space-between
+            }
+
+            .lg\:space-y-0> :not([hidden])~ :not([hidden]) {
+                --tw-space-y-reverse: 0;
+                margin-top: calc(0px * calc(1 - var(--tw-space-y-reverse)));
+                margin-bottom: calc(0px * var(--tw-space-y-reverse))
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .dark\:inline {
+                display: inline
+            }
+
+            .dark\:hidden {
+                display: none
+            }
+
+            .dark\:divide-slate-700> :not([hidden])~ :not([hidden]) {
+                --tw-divide-opacity: 1;
+                border-color: rgb(51 65 85 / var(--tw-divide-opacity, 1))
+            }
+
+            .dark\:border-slate-600 {
+                --tw-border-opacity: 1;
+                border-color: rgb(71 85 105 / var(--tw-border-opacity, 1))
+            }
+
+            .dark\:border-slate-700 {
+                --tw-border-opacity: 1;
+                border-color: rgb(51 65 85 / var(--tw-border-opacity, 1))
+            }
+
+            .dark\:bg-slate-900 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(15 23 42 / var(--tw-bg-opacity, 1))
+            }
+
+            .dark\:bg-blue-900 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(30 58 138 / var(--tw-bg-opacity, 1))
+            }
+
+            .dark\:bg-blue-900\/20 {
+                background-color: rgb(30 58 138 / 0.2)
+            }
+
+            .dark\:bg-green-800 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(22 101 52 / var(--tw-bg-opacity, 1))
+            }
+
+            .dark\:bg-green-900 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(20 83 45 / var(--tw-bg-opacity, 1))
+            }
+
+            .dark\:bg-green-900\/20 {
+                background-color: rgb(20 83 45 / 0.2)
+            }
+
+            .dark\:bg-orange-900 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(124 45 18 / var(--tw-bg-opacity, 1))
+            }
+
+            .dark\:bg-orange-900\/20 {
+                background-color: rgb(124 45 18 / 0.2)
+            }
+
+            .dark\:bg-purple-900 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(88 28 135 / var(--tw-bg-opacity, 1))
+            }
+
+            .dark\:bg-red-900 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(127 29 29 / var(--tw-bg-opacity, 1))
+            }
+
+            .dark\:bg-red-900\/20 {
+                background-color: rgb(127 29 29 / 0.2)
+            }
+
+            .dark\:bg-slate-600 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(71 85 105 / var(--tw-bg-opacity, 1))
+            }
+
+            .dark\:bg-slate-700 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(51 65 85 / var(--tw-bg-opacity, 1))
+            }
+
+            .dark\:bg-slate-800 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(30 41 59 / var(--tw-bg-opacity, 1))
+            }
+
+            .dark\:bg-yellow-900 {
+                --tw-bg-opacity: 1;
+                background-color: rgb(113 63 18 / var(--tw-bg-opacity, 1))
+            }
+
+            .dark\:bg-yellow-900\/20 {
+                background-color: rgb(113 63 18 / 0.2)
+            }
+
+            .dark\:from-purple-900\/20 {
+                --tw-gradient-from: rgb(88 28 135 / 0.2) var(--tw-gradient-from-position);
+                --tw-gradient-to: rgb(88 28 135 / 0) var(--tw-gradient-to-position);
+                --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+            }
+
+            .dark\:from-slate-700 {
+                --tw-gradient-from: #334155 var(--tw-gradient-from-position);
+                --tw-gradient-to: rgb(51 65 85 / 0) var(--tw-gradient-to-position);
+                --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+            }
+
+            .dark\:from-yellow-900\/20 {
+                --tw-gradient-from: rgb(113 63 18 / 0.2) var(--tw-gradient-from-position);
+                --tw-gradient-to: rgb(113 63 18 / 0) var(--tw-gradient-to-position);
+                --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to)
+            }
+
+            .dark\:to-blue-900\/20 {
+                --tw-gradient-to: rgb(30 58 138 / 0.2) var(--tw-gradient-to-position)
+            }
+
+            .dark\:to-orange-900\/20 {
+                --tw-gradient-to: rgb(124 45 18 / 0.2) var(--tw-gradient-to-position)
+            }
+
+            .dark\:to-slate-600 {
+                --tw-gradient-to: #475569 var(--tw-gradient-to-position)
+            }
+
+            .dark\:text-blue-200 {
+                --tw-text-opacity: 1;
+                color: rgb(191 219 254 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:text-blue-300 {
+                --tw-text-opacity: 1;
+                color: rgb(147 197 253 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:text-blue-400 {
+                --tw-text-opacity: 1;
+                color: rgb(96 165 250 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:text-gray-300 {
+                --tw-text-opacity: 1;
+                color: rgb(209 213 219 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:text-gray-400 {
+                --tw-text-opacity: 1;
+                color: rgb(156 163 175 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:text-green-200 {
+                --tw-text-opacity: 1;
+                color: rgb(187 247 208 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:text-green-300 {
+                --tw-text-opacity: 1;
+                color: rgb(134 239 172 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:text-green-400 {
+                --tw-text-opacity: 1;
+                color: rgb(74 222 128 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:text-orange-400 {
+                --tw-text-opacity: 1;
+                color: rgb(251 146 60 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:text-purple-400 {
+                --tw-text-opacity: 1;
+                color: rgb(192 132 252 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:text-red-200 {
+                --tw-text-opacity: 1;
+                color: rgb(254 202 202 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:text-red-400 {
+                --tw-text-opacity: 1;
+                color: rgb(248 113 113 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:text-white {
+                --tw-text-opacity: 1;
+                color: rgb(255 255 255 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:text-yellow-400 {
+                --tw-text-opacity: 1;
+                color: rgb(250 204 21 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:hover\:bg-slate-500:hover {
+                --tw-bg-opacity: 1;
+                background-color: rgb(100 116 139 / var(--tw-bg-opacity, 1))
+            }
+
+            .dark\:hover\:bg-slate-600:hover {
+                --tw-bg-opacity: 1;
+                background-color: rgb(71 85 105 / var(--tw-bg-opacity, 1))
+            }
+
+            .dark\:hover\:bg-slate-700:hover {
+                --tw-bg-opacity: 1;
+                background-color: rgb(51 65 85 / var(--tw-bg-opacity, 1))
+            }
+
+            .dark\:hover\:text-blue-300:hover {
+                --tw-text-opacity: 1;
+                color: rgb(147 197 253 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:hover\:text-gray-200:hover {
+                --tw-text-opacity: 1;
+                color: rgb(229 231 235 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:hover\:text-green-300:hover {
+                --tw-text-opacity: 1;
+                color: rgb(134 239 172 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:hover\:text-red-300:hover {
+                --tw-text-opacity: 1;
+                color: rgb(252 165 165 / var(--tw-text-opacity, 1))
+            }
+
+            .dark\:focus\:bg-slate-600:focus {
+                --tw-bg-opacity: 1;
+                background-color: rgb(71 85 105 / var(--tw-bg-opacity, 1))
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-slate-900 transition-colors duration-300">
+    <!-- Notification System -->
+    <div id="notification" class="notification bg-green-500 text-white px-6 py-4 shadow-2xl">
+        <div class="flex items-center space-x-3">
+            <i id="notificationIcon" class="fas fa-check-circle text-xl"></i>
+            <span id="notificationText" class="font-medium"></span>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar"
+        class="sidebar bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 fixed left-0 top-0 h-full z-40 shadow-xl">
+        <div class="p-6 border-b border-gray-200 dark:border-slate-700">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-xl shadow-lg">
+                    <i class="fas fa-robot text-white text-xl"></i>
+                </div>
+                <div class="sidebar-text">
+                    <h1 class="text-xl font-bold text-gray-800 dark:text-white">FIXBOT</h1>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Admin Panel</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="p-4 space-y-2">
+            <a href="#" onclick="showPage('dashboard')"
+                class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors duration-200 group bg-blue-100 dark:bg-slate-700 text-blue-700 dark:text-blue-300">
+                <i
+                    class="fas fa-tachometer-alt sidebar-icon text-blue-600 group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="sidebar-text font-medium">Dashboard</span>
+            </a>
+
+            <a href="#" onclick="showPage('complaints')"
+                class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors duration-200 group">
+                <i
+                    class="fas fa-clipboard-list sidebar-icon text-green-600 group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="sidebar-text font-medium">Complaints</span>
+                <span class="sidebar-text bg-red-500 text-white text-xs px-2 py-1 rounded-full ml-auto">23</span>
+            </a>
+
+            <a href="#" onclick="showPage('ai-suite')"
+                class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors duration-200 group">
+                <i
+                    class="fas fa-brain sidebar-icon text-purple-600 group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="sidebar-text font-medium">AI Suite</span>
+                <span class="sidebar-text bg-purple-500 text-white text-xs px-2 py-1 rounded-full ml-auto">AI</span>
+            </a>
+
+            <a href="#" onclick="showPage('analytics')"
+                class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors duration-200 group">
+                <i
+                    class="fas fa-chart-bar sidebar-icon text-orange-600 group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="sidebar-text font-medium">Analytics</span>
+            </a>
+
+            <a href="#" onclick="showPage('users')"
+                class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors duration-200 group">
+                <i
+                    class="fas fa-users sidebar-icon text-indigo-600 group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="sidebar-text font-medium">User Management</span>
+            </a>
+
+            <a href="#" onclick="showPage('settings')"
+                class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors duration-200 group">
+                <i
+                    class="fas fa-cog sidebar-icon text-gray-600 group-hover:scale-110 transition-transform duration-200"></i>
+                <span class="sidebar-text font-medium">Settings</span>
+            </a>
+        </nav>
+
+        <div class="absolute bottom-4 left-4 right-4 sidebar-text">
+            <div
+                class="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 p-4 rounded-xl">
+                <div class="flex items-center space-x-3 mb-2">
+                    <div
+                        class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                        AK
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800 dark:text-white">Admin Kumar</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Super Admin</p>
+                    </div>
+                </div>
+                <button
+                    class="w-full bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors duration-200"
+                    fdprocessedid="soxx1w">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="mainContent" class="main-content ml-80 transition-all duration-300">
+        <!-- Header -->
+        <header
+            class="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-6 py-4 sticky top-0 z-30">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button id="sidebarToggle"
+                        class="lg:hidden text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <div>
+                        <h1 id="pageTitle" class="text-2xl font-bold text-gray-800 dark:text-white">Dashboard</h1>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Welcome back, Admin Kumar</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <!-- Search -->
+                    <div class="relative hidden md:block">
+                        <input type="text" placeholder="Search complaints..."
+                            class="bg-gray-100 dark:bg-slate-700 border-0 rounded-xl px-4 py-2 pl-10 w-64 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-600 transition-all duration-200"
+                            fdprocessedid="4o1clrc">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button id="themeToggle"
+                        class="p-2 rounded-xl bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors duration-200"
+                        fdprocessedid="05xae">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:inline"></i>
+                    </button>
+
+                    <!-- Notifications -->
+                    <button
+                        class="relative p-2 rounded-xl bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors duration-200"
+                        fdprocessedid="dqgzv">
+                        <i class="fas fa-bell"></i>
+                        <span
+                            class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">3</span>
+                    </button>
+
+                    <!-- Profile -->
+                    <div class="flex items-center space-x-3">
+                        <div
+                            class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                            AK
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Page -->
+        <div id="dashboardPage" class="page p-6 active">
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift fade-in">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-blue-100 dark:bg-blue-900 p-3 rounded-xl">
+                            <i class="fas fa-clipboard-list text-blue-600 dark:text-blue-400 text-xl"></i>
+                        </div>
+                        <span class="text-green-500 text-sm font-medium">+12%</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-1">2,847</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">Total Complaints</p>
+                    <div class="mt-3 h-1 bg-gray-200 dark:bg-slate-700 rounded-full">
+                        <div class="h-full bg-blue-500 rounded-full" style="width: 75%"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift fade-in">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-green-100 dark:bg-green-900 p-3 rounded-xl">
+                            <i class="fas fa-plus text-green-600 dark:text-green-400 text-xl"></i>
+                        </div>
+                        <span class="text-green-500 text-sm font-medium">+8</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-1">47</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">New Today</p>
+                    <div class="mt-3 h-1 bg-gray-200 dark:bg-slate-700 rounded-full">
+                        <div class="h-full bg-green-500 rounded-full" style="width: 60%"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift fade-in">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-purple-100 dark:bg-purple-900 p-3 rounded-xl">
+                            <i class="fas fa-check-circle text-purple-600 dark:text-purple-400 text-xl"></i>
+                        </div>
+                        <span class="text-green-500 text-sm font-medium">+15</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-1">32</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">Resolved Today</p>
+                    <div class="mt-3 h-1 bg-gray-200 dark:bg-slate-700 rounded-full">
+                        <div class="h-full bg-purple-500 rounded-full" style="width: 85%"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift fade-in">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-red-100 dark:bg-red-900 p-3 rounded-xl">
+                            <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-xl"></i>
+                        </div>
+                        <span class="text-red-500 text-sm font-medium">-3</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-1">23</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">Overdue</p>
+                    <div class="mt-3 h-1 bg-gray-200 dark:bg-slate-700 rounded-full">
+                        <div class="h-full bg-red-500 rounded-full" style="width: 30%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid lg:grid-cols-3 gap-6 mb-8">
+                <!-- Complaints by Sector -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Complaints by Sector</h3>
+                    <div class="chart-container">
+                        <canvas id="sectorChart" width="380" height="300"
+                            style="display: block; box-sizing: border-box; height: 300px; width: 380px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- Status Distribution -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Status Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="statusChart" width="380" height="300"
+                            style="display: block; box-sizing: border-box; height: 300px; width: 380px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- Weekly Trends -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Weekly Trends</h3>
+                    <div class="chart-container">
+                        <canvas id="trendsChart" width="380" height="300"
+                            style="display: block; box-sizing: border-box; height: 300px; width: 380px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Widgets -->
+            <div class="grid lg:grid-cols-2 gap-6">
+                <!-- Urgent Complaints -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Urgent Complaints</h3>
+                        <span
+                            class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-3 py-1 rounded-full text-sm font-medium">5
+                            Critical</span>
+                    </div>
+                    <div class="space-y-4">
+                        <div
+                            class="flex items-center space-x-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border-l-4 border-red-500">
+                            <div class="bg-red-500 w-3 h-3 rounded-full pulse-animation"></div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800 dark:text-white">Water Pipeline Burst</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Municipal • ID: FB001234 • 2 hours
+                                    ago</p>
+                            </div>
+                            <button
+                                class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 transition-colors duration-200"
+                                fdprocessedid="wqm2aqi">
+                                Assign
+                            </button>
+                        </div>
+
+                        <div
+                            class="flex items-center space-x-4 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl border-l-4 border-orange-500">
+                            <div class="bg-orange-500 w-3 h-3 rounded-full pulse-animation"></div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800 dark:text-white">Power Outage - Hospital Area</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Electricity • ID: FB001235 • 4 hours
+                                    ago</p>
+                            </div>
+                            <button
+                                class="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-orange-600 transition-colors duration-200"
+                                fdprocessedid="0esfnn">
+                                Assign
+                            </button>
+                        </div>
+
+                        <div
+                            class="flex items-center space-x-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border-l-4 border-yellow-500">
+                            <div class="bg-yellow-500 w-3 h-3 rounded-full pulse-animation"></div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800 dark:text-white">Road Accident - Traffic Jam</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Police • ID: FB001236 • 6 hours ago
+                                </p>
+                            </div>
+                            <button
+                                class="bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-yellow-600 transition-colors duration-200"
+                                fdprocessedid="qvzcvk">
+                                Assign
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-time Activity Feed -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Real-time Activity</h3>
+                        <div class="flex items-center space-x-2">
+                            <div class="bg-green-500 w-2 h-2 rounded-full animate-pulse"></div>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Live</span>
+                        </div>
+                    </div>
+                    <div class="space-y-4 max-h-80 overflow-y-auto">
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-green-100 dark:bg-green-900 p-2 rounded-full">
+                                <i class="fas fa-check text-green-600 dark:text-green-400 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm text-gray-800 dark:text-white"><strong>Officer Sharma</strong>
+                                    resolved complaint FB001230</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">2 minutes ago</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-blue-100 dark:bg-blue-900 p-2 rounded-full">
+                                <i class="fas fa-plus text-blue-600 dark:text-blue-400 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm text-gray-800 dark:text-white">New complaint filed: <strong>Street
+                                        Light Issue</strong></p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">5 minutes ago</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-purple-100 dark:bg-purple-900 p-2 rounded-full">
+                                <i class="fas fa-brain text-purple-600 dark:text-purple-400 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm text-gray-800 dark:text-white">AI detected duplicate complaint and
+                                    merged automatically</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">8 minutes ago</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-orange-100 dark:bg-orange-900 p-2 rounded-full">
+                                <i class="fas fa-user text-orange-600 dark:text-orange-400 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm text-gray-800 dark:text-white"><strong>Admin Kumar</strong> assigned
+                                    complaint to Officer Patel</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">12 minutes ago</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-red-100 dark:bg-red-900 p-2 rounded-full">
+                                <i class="fas fa-exclamation text-red-600 dark:text-red-400 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm text-gray-800 dark:text-white">Complaint FB001225 marked as overdue
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">15 minutes ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complaints Management Page -->
+        <div id="complaintsPage" class="page p-6">
+            <!-- Filters and Search -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg mb-6">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                        <select
+                            class="bg-gray-100 dark:bg-slate-700 border-0 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                            <option>All Sectors</option>
+                            <option>Municipal</option>
+                            <option>Police</option>
+                            <option>Healthcare</option>
+                            <option>Education</option>
+                        </select>
+
+                        <select
+                            class="bg-gray-100 dark:bg-slate-700 border-0 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                            <option>All Status</option>
+                            <option>Pending</option>
+                            <option>In Progress</option>
+                            <option>Resolved</option>
+                            <option>Overdue</option>
+                        </select>
+
+                        <select
+                            class="bg-gray-100 dark:bg-slate-700 border-0 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                            <option>All Priority</option>
+                            <option>Low</option>
+                            <option>Medium</option>
+                            <option>High</option>
+                            <option>Urgent</option>
+                        </select>
+                    </div>
+
+                    <div class="flex space-x-3">
+                        <button
+                            class="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors duration-200">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                        <button
+                            class="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition-colors duration-200">
+                            <i class="fas fa-plus mr-2"></i>Bulk Actions
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complaints Table -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="data-table w-full">
+                        <thead class="bg-gray-50 dark:bg-slate-700">
+                            <tr>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    <input type="checkbox" class="rounded">
+                                </th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    ID</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Citizen</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Title</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Sector</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Priority</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Status</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Assigned To</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Date</th>
+                                <th
+                                    class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+                            <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <input type="checkbox" class="rounded">
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="text-sm font-medium text-blue-600 dark:text-blue-400">FB001234</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                            RS
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Raj Sharma</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">raj@email.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900 dark:text-white font-medium">Water Pipeline Burst
+                                    </div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">Main road near ABC colony...
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                        Municipal
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium priority-urgent">
+                                        Urgent
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-progress">
+                                        In Progress
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                            AP
+                                        </div>
+                                        <span class="ml-2 text-sm text-gray-900 dark:text-white">A. Patel</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    2 hours ago
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <button onclick="openComplaintModal('FB001234')"
+                                        class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button
+                                        class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 mr-3">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button
+                                        class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- More rows would be here -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <input type="checkbox" class="rounded">
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="text-sm font-medium text-blue-600 dark:text-blue-400">FB001235</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                            MK
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Maya Kumar</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">maya@email.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900 dark:text-white font-medium">Street Light Not
+                                        Working</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">Near park entrance, very
+                                        dark...</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                        Municipal
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium priority-medium">
+                                        Medium
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-pending">
+                                        Pending
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Unassigned</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    1 day ago
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <button onclick="openComplaintModal('FB001235')"
+                                        class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button
+                                        class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 mr-3">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button
+                                        class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="bg-white dark:bg-slate-800 px-6 py-4 border-t border-gray-200 dark:border-slate-700">
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-700 dark:text-gray-300">
+                            Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of <span
+                                class="font-medium">97</span> results
+                        </div>
+                        <div class="flex space-x-2">
+                            <button
+                                class="px-3 py-2 text-sm bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600">
+                                Previous
+                            </button>
+                            <button class="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg">1</button>
+                            <button
+                                class="px-3 py-2 text-sm bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600">2</button>
+                            <button
+                                class="px-3 py-2 text-sm bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600">3</button>
+                            <button
+                                class="px-3 py-2 text-sm bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600">
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Suite Page -->
+        <div id="ai-suitePage" class="page p-6">
+            <div class="grid lg:grid-cols-2 gap-6 mb-8">
+                <!-- AI Triage -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800 dark:text-white">AI-Powered Triage</h3>
+                        <div class="bg-purple-100 dark:bg-purple-900 p-2 rounded-xl">
+                            <i class="fas fa-brain text-purple-600 dark:text-purple-400 text-xl"></i>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div
+                            class="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 p-4 rounded-xl">
+                            <div class="flex items-center justify-between mb-3">
+                                <span
+                                    class="text-sm font-medium text-gray-700 dark:text-gray-300">Auto-Classification</span>
+                                <span class="text-sm text-green-600 dark:text-green-400 font-medium">98.5%
+                                    Accuracy</span>
+                            </div>
+                            <div class="confidence-bar bg-gray-200 dark:bg-slate-700">
+                                <div class="confidence-fill bg-gradient-to-r from-purple-500 to-blue-500"
+                                    style="width: 98.5%"></div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">Complaints Processed Today</span>
+                                <span class="font-semibold text-gray-800 dark:text-white">47</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">Auto-Assigned</span>
+                                <span class="font-semibold text-gray-800 dark:text-white">42</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">Manual Review Required</span>
+                                <span class="font-semibold text-gray-800 dark:text-white">5</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Duplicate Detection -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Duplicate Detection</h3>
+                        <div class="bg-green-100 dark:bg-green-900 p-2 rounded-xl">
+                            <i class="fas fa-copy text-green-600 dark:text-green-400 text-xl"></i>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl border-l-4 border-green-500">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-green-800 dark:text-green-200">Potential Duplicate
+                                    Found</span>
+                                <span
+                                    class="text-xs bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 px-2 py-1 rounded-full">95%
+                                    Match</span>
+                            </div>
+                            <p class="text-sm text-green-700 dark:text-green-300 mb-3">Street light issue at Park Avenue
+                                - Similar to FB001230</p>
+                            <div class="flex space-x-2">
+                                <button
+                                    class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700">Merge</button>
+                                <button
+                                    class="bg-gray-300 dark:bg-slate-600 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-lg text-sm hover:bg-gray-400 dark:hover:bg-slate-500">Keep
+                                    Separate</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="text-center p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                                <div class="text-2xl font-bold text-gray-800 dark:text-white">12</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">Duplicates Merged Today</div>
+                            </div>
+                            <div class="text-center p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                                <div class="text-2xl font-bold text-gray-800 dark:text-white">156</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">Total This Month</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sentiment Analysis -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Sentiment Analysis</h3>
+                    <div class="bg-orange-100 dark:bg-orange-900 p-2 rounded-xl">
+                        <i class="fas fa-heart text-orange-600 dark:text-orange-400 text-xl"></i>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div
+                            class="w-20 h-20 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-angry text-red-600 dark:text-red-400 text-2xl"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-red-600 dark:text-red-400 mb-1">8</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Angry Citizens</div>
+                        <div class="text-xs text-red-600 dark:text-red-400 mt-1">High Priority</div>
+                    </div>
+
+                    <div class="text-center">
+                        <div
+                            class="w-20 h-20 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-meh text-yellow-600 dark:text-yellow-400 text-2xl"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">23</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Frustrated</div>
+                        <div class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">Medium Priority</div>
+                    </div>
+
+                    <div class="text-center">
+                        <div
+                            class="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-smile text-green-600 dark:text-green-400 text-2xl"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">16</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">Neutral/Positive</div>
+                        <div class="text-xs text-green-600 dark:text-green-400 mt-1">Standard Priority</div>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-lightbulb text-blue-600 dark:text-blue-400"></i>
+                        <div>
+                            <p class="font-medium text-blue-800 dark:text-blue-200">AI Recommendation</p>
+                            <p class="text-sm text-blue-700 dark:text-blue-300">Prioritize angry citizens' complaints
+                                for immediate attention to prevent escalation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Page -->
+        <div id="analyticsPage" class="page p-6">
+            <div class="grid lg:grid-cols-2 gap-6 mb-8">
+                <!-- Department Performance -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-6">Department Performance</h3>
+                    <div class="chart-container">
+                        <canvas id="departmentChart" height="0"
+                            style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas>
+                    </div>
+                </div>
+
+                <!-- Officer Leaderboard -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-6">Officer Leaderboard</h3>
+                    <div class="space-y-4">
+                        <div
+                            class="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl border-l-4 border-yellow-500">
+                            <div class="flex items-center space-x-3">
+                                <div
+                                    class="bg-yellow-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">
+                                    1</div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 dark:text-white">Officer Sharma</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Municipal Department</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-gray-800 dark:text-white">98 Resolved</p>
+                                <p class="text-sm text-green-600 dark:text-green-400">2.1 days avg</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-700 rounded-xl">
+                            <div class="flex items-center space-x-3">
+                                <div
+                                    class="bg-gray-400 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">
+                                    2</div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 dark:text-white">Officer Patel</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Police Department</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-gray-800 dark:text-white">87 Resolved</p>
+                                <p class="text-sm text-green-600 dark:text-green-400">2.8 days avg</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-700 rounded-xl">
+                            <div class="flex items-center space-x-3">
+                                <div
+                                    class="bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">
+                                    3</div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 dark:text-white">Officer Kumar</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Healthcare</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-gray-800 dark:text-white">76 Resolved</p>
+                                <p class="text-sm text-green-600 dark:text-green-400">3.2 days avg</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Report Builder -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-6">Custom Report Builder</h3>
+                <div class="grid lg:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Metrics</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded" checked="">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Total Complaints</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Resolution Time</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Satisfaction Score</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dimensions</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded" checked="">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Department</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Priority Level</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Time Period</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Chart
+                            Type</label>
+                        <select
+                            class="w-full bg-gray-100 dark:bg-slate-700 border-0 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                            <option>Bar Chart</option>
+                            <option>Line Chart</option>
+                            <option>Pie Chart</option>
+                            <option>Area Chart</option>
+                        </select>
+
+                        <button
+                            class="w-full mt-4 bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors duration-200">
+                            Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management Page -->
+        <div id="usersPage" class="page p-6">
+            <div class="grid lg:grid-cols-3 gap-6 mb-8">
+                <!-- Admin Users -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Admin Users</h3>
+                        <button class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-700">
+                            <i class="fas fa-plus mr-1"></i>Add
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div
+                                    class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                    SA</div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-800 dark:text-white">Super Admin</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Full Access</p>
+                                </div>
+                            </div>
+                            <span
+                                class="text-xs bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded-full">3
+                                Users</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div
+                                    class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                    DH</div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-800 dark:text-white">Dept. Head</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Department Access</p>
+                                </div>
+                            </div>
+                            <span
+                                class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">12
+                                Users</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div
+                                    class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                    OF</div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-800 dark:text-white">Officer</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Limited Access</p>
+                                </div>
+                            </div>
+                            <span
+                                class="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full">45
+                                Users</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Citizen Management -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Citizen Management</h3>
+                    <div class="space-y-4">
+                        <div class="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                            <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">25,847</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Registered Citizens</div>
+                        </div>
+
+                        <div class="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
+                            <div class="text-3xl font-bold text-green-600 dark:text-green-400">1,234</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Active This Month</div>
+                        </div>
+
+                        <div class="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-xl">
+                            <div class="text-3xl font-bold text-red-600 dark:text-red-400">12</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Blocked Users</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Recent Activity</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-green-100 dark:bg-green-900 p-1 rounded-full">
+                                <i class="fas fa-user-plus text-green-600 dark:text-green-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-800 dark:text-white">New officer added to Municipal dept.
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">2 hours ago</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-red-100 dark:bg-red-900 p-1 rounded-full">
+                                <i class="fas fa-user-slash text-red-600 dark:text-red-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-800 dark:text-white">Citizen account blocked for spam</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">5 hours ago</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-blue-100 dark:bg-blue-900 p-1 rounded-full">
+                                <i class="fas fa-edit text-blue-600 dark:text-blue-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-800 dark:text-white">Role updated for Officer Patel</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">1 day ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User List Table -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden">
+                <div class="p-6 border-b border-gray-200 dark:border-slate-700">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">All Users</h3>
+                        <div class="flex space-x-3">
+                            <select class="bg-gray-100 dark:bg-slate-700 border-0 rounded-xl px-4 py-2 text-sm">
+                                <option>All Roles</option>
+                                <option>Super Admin</option>
+                                <option>Department Head</option>
+                                <option>Officer</option>
+                            </select>
+                            <button class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm hover:bg-blue-700">
+                                <i class="fas fa-plus mr-2"></i>Add User
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 dark:bg-slate-700">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    User</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    Role</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    Department</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    Last Active</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    Status</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
+                            <tr class="hover:bg-gray-50 dark:hover:bg-slate-700">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                                            AK
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Admin Kumar</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">admin@fixbot.gov.in</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                        Super Admin
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">All Departments</td>
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Online now</td>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                        Active
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm font-medium">
+                                    <button
+                                        class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3">Edit</button>
+                                    <button
+                                        class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Disable</button>
+                                </td>
+                            </tr>
+                            <!-- More user rows would be here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settingsPage" class="page p-6">
+            <div class="grid lg:grid-cols-2 gap-6">
+                <!-- Sector Management -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-6">Sector Management</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-700 rounded-xl">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-graduation-cap text-blue-600 dark:text-blue-400"></i>
+                                <div>
+                                    <p class="font-medium text-gray-800 dark:text-white">Educational Institutions</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">SLA: 5 days</p>
+                                </div>
+                            </div>
+                            <button
+                                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-700 rounded-xl">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-shield-alt text-red-600 dark:text-red-400"></i>
+                                <div>
+                                    <p class="font-medium text-gray-800 dark:text-white">Law Enforcement</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">SLA: 2 days</p>
+                                </div>
+                            </div>
+                            <button
+                                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+
+                        <button
+                            class="w-full bg-blue-600 text-white px-4 py-3 rounded-xl hover:bg-blue-700 transition-colors duration-200">
+                            <i class="fas fa-plus mr-2"></i>Add New Sector
+                        </button>
+                    </div>
+                </div>
+
+                <!-- System Settings -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-6">System Settings</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Auto-Assignment</label>
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" class="rounded" checked="">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Enable AI-powered
+                                    auto-assignment</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notification
+                                Settings</label>
+                            <div class="space-y-2">
+                                <div class="flex items-center space-x-3">
+                                    <input type="checkbox" class="rounded" checked="">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Email notifications</span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <input type="checkbox" class="rounded" checked="">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">SMS notifications</span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <input type="checkbox" class="rounded">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Push notifications</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Default SLA
+                                (days)</label>
+                            <input type="number" value="7"
+                                class="w-full bg-gray-100 dark:bg-slate-700 border-0 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                        </div>
+
+                        <button
+                            class="w-full bg-green-600 text-white px-4 py-3 rounded-xl hover:bg-green-700 transition-colors duration-200">
+                            Save Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Log -->
+            <div class="mt-6 bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg hover-lift">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-6">Audit Log</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 dark:bg-slate-700">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    Timestamp</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    User</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    Action</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    Details</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                    IP Address</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
+                            <tr>
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">2024-01-15 14:30:25</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">Admin Kumar</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">Complaint Assigned</td>
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">FB001234 assigned to
+                                    Officer Patel</td>
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">192.168.1.100</td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">2024-01-15 14:25:12</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">Officer Sharma</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">Status Updated</td>
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">FB001230 marked as
+                                    resolved</td>
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">192.168.1.101</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Complaint Detail Modal -->
+    <div id="complaintModal" class="modal">
+        <div
+            class="modal-content bg-white dark:bg-slate-800 rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Complaint Details</h2>
+                <button onclick="closeComplaintModal()"
+                    class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-6">
+                <!-- Main Content -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Complaint Summary -->
+                    <div class="bg-gray-50 dark:bg-slate-700 rounded-xl p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Water Pipeline Burst</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            There is a major water pipeline burst on the main road near ABC Colony. Water is flooding
+                            the entire street
+                            and causing traffic disruption. This has been ongoing for the past 6 hours and residents are
+                            facing water shortage.
+                        </p>
+
+                        <div class="grid md:grid-cols-2 gap-4 text-sm">
+                            <div><strong>Location:</strong> Main Road, ABC Colony</div>
+                            <div><strong>Priority:</strong> <span class="text-red-600 dark:text-red-400">Urgent</span>
+                            </div>
+                            <div><strong>Sector:</strong> Municipal Corporation</div>
+                            <div><strong>Submitted:</strong> 2 hours ago</div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div class="bg-gray-50 dark:bg-slate-700 rounded-xl p-6">
+                        <h4 class="font-semibold text-gray-800 dark:text-white mb-4">Timeline</h4>
+                        <div class="space-y-4">
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-blue-500 w-3 h-3 rounded-full mt-2"></div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-800 dark:text-white">Complaint Submitted</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">2 hours ago by Raj Sharma</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-yellow-500 w-3 h-3 rounded-full mt-2"></div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-800 dark:text-white">Assigned to Officer
+                                        Patel</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">1 hour ago by Admin Kumar</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-green-500 w-3 h-3 rounded-full mt-2"></div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-800 dark:text-white">Field Team Dispatched
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">30 minutes ago by Officer Patel
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Internal Notes -->
+                    <div class="bg-gray-50 dark:bg-slate-700 rounded-xl p-6">
+                        <h4 class="font-semibold text-gray-800 dark:text-white mb-4">Internal Notes</h4>
+                        <div class="space-y-3 mb-4">
+                            <div class="bg-white dark:bg-slate-800 p-3 rounded-lg">
+                                <p class="text-sm text-gray-800 dark:text-white mb-1">Emergency repair team has been
+                                    notified. ETA 15 minutes.</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Officer Patel • 25 minutes ago</p>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <input type="text" placeholder="Add internal note..."
+                                class="flex-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm">
+                            <button
+                                class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">Add</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="space-y-6">
+                    <!-- Citizen Info -->
+                    <div class="bg-gray-50 dark:bg-slate-700 rounded-xl p-4">
+                        <h4 class="font-semibold text-gray-800 dark:text-white mb-3">Citizen Information</h4>
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div
+                                class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                                RS
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-800 dark:text-white">Raj Sharma</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">raj@email.com</p>
+                            </div>
+                        </div>
+                        <div class="text-sm space-y-1">
+                            <p><strong>Phone:</strong> +91 98765 43210</p>
+                            <p><strong>Address:</strong> ABC Colony, Sector 15</p>
+                            <p><strong>Previous Complaints:</strong> 3</p>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="bg-gray-50 dark:bg-slate-700 rounded-xl p-4">
+                        <h4 class="font-semibold text-gray-800 dark:text-white mb-3">Actions</h4>
+                        <div class="space-y-2">
+                            <select
+                                class="w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm">
+                                <option>Change Status</option>
+                                <option>Pending</option>
+                                <option>In Progress</option>
+                                <option>Resolved</option>
+                                <option>Closed</option>
+                            </select>
+                            <select
+                                class="w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm">
+                                <option>Reassign To</option>
+                                <option>Officer Patel</option>
+                                <option>Officer Sharma</option>
+                                <option>Officer Kumar</option>
+                            </select>
+                            <button
+                                class="w-full bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">
+                                Update Complaint
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Evidence -->
+                    <div class="bg-gray-50 dark:bg-slate-700 rounded-xl p-4">
+                        <h4 class="font-semibold text-gray-800 dark:text-white mb-3">Evidence</h4>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-gray-200 dark:bg-slate-600 rounded-lg h-20 flex items-center justify-center">
+                                <i class="fas fa-image text-gray-400 text-xl"></i>
+                            </div>
+                            <div class="bg-gray-200 dark:bg-slate-600 rounded-lg h-20 flex items-center justify-center">
+                                <i class="fas fa-image text-gray-400 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentPage = 'dashboard';
+        let isDarkMode = localStorage.getItem('darkMode') === 'true';
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeTheme();
+            initializeSidebar();
+            initializeCharts();
+            initializeEventListeners();
+        });
+
+        // Theme Management
+        function initializeTheme() {
+            if (isDarkMode) {
+                document.documentElement.classList.add('dark');
+            }
+
+            document.getElementById('themeToggle').addEventListener('click', function () {
+                isDarkMode = !isDarkMode;
+                document.documentElement.classList.toggle('dark');
+                localStorage.setItem('darkMode', isDarkMode);
+
+                // Reinitialize charts with new theme
+                setTimeout(() => {
+                    initializeCharts();
+                }, 100);
+            });
+        }
+
+        // Sidebar Management
+        function initializeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+
+            sidebarToggle.addEventListener('click', function () {
+                sidebar.classList.toggle('open');
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function (e) {
+                if (window.innerWidth <= 1024) {
+                    if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            });
+        }
+
+        // Page Navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Show selected page
+            document.getElementById(pageId + 'Page').classList.add('active');
+            currentPage = pageId;
+
+            // Update page title
+            const titles = {
+                'dashboard': 'Dashboard',
+                'complaints': 'Complaint Management',
+                'ai-suite': 'AI & Automation Suite',
+                'analytics': 'Analytics & Reports',
+                'users': 'User Management',
+                'settings': 'Settings'
+            };
+
+            document.getElementById('pageTitle').textContent = titles[pageId] || 'Dashboard';
+
+            // Update active nav item
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('bg-blue-100', 'dark:bg-slate-700', 'text-blue-700', 'dark:text-blue-300');
+            });
+
+            const activeNavItem = document.querySelector(`[onclick="showPage('${pageId}')"]`);
+            if (activeNavItem) {
+                activeNavItem.classList.add('bg-blue-100', 'dark:bg-slate-700', 'text-blue-700', 'dark:text-blue-300');
+            }
+
+            // Close mobile sidebar
+            document.getElementById('sidebar').classList.remove('open');
+        }
+
+        // Chart Initialization
+        function initializeCharts() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#f1f5f9' : '#374151';
+            const gridColor = isDark ? '#334155' : '#e5e7eb';
+
+            // Destroy existing charts
+            Chart.helpers.each(Chart.instances, function (instance) {
+                instance.destroy();
+            });
+
+            // Sector Chart (Donut)
+            const sectorCtx = document.getElementById('sectorChart');
+            if (sectorCtx) {
+                new Chart(sectorCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Municipal', 'Police', 'Healthcare', 'Education', 'Transport'],
+                        datasets: [{
+                            data: [35, 25, 20, 12, 8],
+                            backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: textColor,
+                                    usePointStyle: true,
+                                    padding: 15
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Status Chart (Bar)
+            const statusCtx = document.getElementById('statusChart');
+            if (statusCtx) {
+                new Chart(statusCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Pending', 'In Progress', 'Resolved', 'Overdue'],
+                        datasets: [{
+                            data: [45, 32, 78, 12],
+                            backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444'],
+                            borderRadius: 8,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: textColor
+                                },
+                                grid: {
+                                    color: gridColor
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: textColor
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Trends Chart (Line)
+            const trendsCtx = document.getElementById('trendsChart');
+            if (trendsCtx) {
+                new Chart(trendsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'New Complaints',
+                            data: [12, 19, 15, 25, 22, 18, 14],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: textColor
+                                },
+                                grid: {
+                                    color: gridColor
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: textColor
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Department Performance Chart
+            const departmentCtx = document.getElementById('departmentChart');
+            if (departmentCtx) {
+                new Chart(departmentCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Response Time', 'Resolution Rate', 'Citizen Satisfaction', 'Efficiency', 'Quality'],
+                        datasets: [{
+                            label: 'Municipal',
+                            data: [85, 92, 78, 88, 90],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            pointBackgroundColor: '#3b82f6'
+                        }, {
+                            label: 'Police',
+                            data: [78, 85, 82, 75, 88],
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            pointBackgroundColor: '#ef4444'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: textColor
+                                }
+                            }
+                        },
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    color: textColor
+                                },
+                                grid: {
+                                    color: gridColor
+                                },
+                                pointLabels: {
+                                    color: textColor
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Event Listeners
+        function initializeEventListeners() {
+            // Initialize default page
+            showPage('dashboard');
+        }
+
+        // Modal Management
+        function openComplaintModal(complaintId) {
+            document.getElementById('complaintModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeComplaintModal() {
+            document.getElementById('complaintModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Notification System
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const icon = document.getElementById('notificationIcon');
+            const text = document.getElementById('notificationText');
+
+            // Set message
+            text.textContent = message;
+
+            // Set type
+            notification.className = 'notification px-6 py-4 shadow-2xl';
+            if (type === 'success') {
+                notification.classList.add('bg-green-500', 'text-white');
+                icon.className = 'fas fa-check-circle text-xl';
+            } else if (type === 'error') {
+                notification.classList.add('bg-red-500', 'text-white');
+                icon.className = 'fas fa-exclamation-circle text-xl';
+            } else if (type === 'info') {
+                notification.classList.add('bg-blue-500', 'text-white');
+                icon.className = 'fas fa-info-circle text-xl';
+            }
+
+            // Show notification
+            notification.classList.add('show');
+
+            // Hide after 4 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        // Utility Functions
+        function formatDate(date) {
+            return new Date(date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function formatTime(date) {
+            return new Date(date).toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Sample Functions for Demo
+        function assignComplaint(complaintId, officerId) {
+            showNotification(`Complaint ${complaintId} assigned successfully!`, 'success');
+        }
+
+        function updateComplaintStatus(complaintId, status) {
+            showNotification(`Complaint ${complaintId} status updated to ${status}`, 'success');
+        }
+
+        function exportData(format) {
+            showNotification(`Data exported in ${format} format`, 'success');
+        }
+
+        // Real-time Updates Simulation
+        setInterval(() => {
+            // Simulate real-time updates
+            const activities = [
+                'New complaint filed: Street Light Issue',
+                'Officer Sharma resolved complaint FB001240',
+                'AI detected duplicate complaint and merged',
+                'Complaint FB001241 marked as overdue',
+                'Officer Patel updated complaint status'
+            ];
+
+            // This would normally come from a WebSocket or API
+            // For demo purposes, we're just simulating
+        }, 30000);
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key) {
+                    case '1':
+                        e.preventDefault();
+                        showPage('dashboard');
+                        break;
+                    case '2':
+                        e.preventDefault();
+                        showPage('complaints');
+                        break;
+                    case '3':
+                        e.preventDefault();
+                        showPage('ai-suite');
+                        break;
+                    case '4':
+                        e.preventDefault();
+                        showPage('analytics');
+                        break;
+                    case '5':
+                        e.preventDefault();
+                        showPage('users');
+                        break;
+                    case '6':
+                        e.preventDefault();
+                        showPage('settings');
+                        break;
+                }
+            }
+        });
+    </script>
+    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'97d29989b379edf5',t:'MTc1NzU0NTgzNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+    <iframe height="1" width="1"
+        style="position: absolute; top: 0px; left: 0px; border: none; visibility: hidden;"></iframe>
+
+    <span id="PING_IFRAME_FORM_DETECTION" style="display: none;"></span>
+</body>
+
+</html>
